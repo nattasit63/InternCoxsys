@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Mathematics Constants -->
+    <xacro:property name="PI" value="3.1415926535897931"/>
+    <!-- Base Visual Properties -->
+    <xacro:property name="BASE_LENGTH" value="0.65"/>
+    <xacro:property name="BASE_WIDTH" value="0.55"/>
+    <xacro:property name="BASE_HEIGHT" value="0.25"/>
+    <xacro:property name="BASE_ELEVATION" value="0.04"/>
+    <xacro:property name="BASE_MESH_PATH" value="package://xxx_description/meshes/coconut.stl"/>
+    <xacro:property name="BASE_MESH_Z_OFFSET" value="0.018"/>
+    <!-- Base Inertial Properties -->
+    <xacro:property name="BASE_M" value="40.0"/>
+    <xacro:property name="BASE_COM" value="0.0002 0.0001 -0.0001"/>
+    <xacro:property name="BASE_Ixx" value="1.79366667"/>
+    <xacro:property name="BASE_Iyy" value="1.28666667"/>
+    <xacro:property name="BASE_Izz" value="2.30966667"/>
+    <xacro:property name="BASE_Ixy" value="0"/>
+    <xacro:property name="BASE_Ixz" value="0"/>
+    <xacro:property name="BASE_Iyz" value="0"/>
+    <!-- Base Pole -->
+    <xacro:property name="POLE_RADIUS" value="0.015"/>
+    <xacro:property name="POLE_HEIGHT" value="0.05"/>
+    <xacro:property name="POLE_SEPARATION_X" value="0.25"/>
+    <xacro:property name="POLE_SEPARATION_Y" value="0.25"/>
+
+    <!-- Wheel Visual Properties -->
+    <xacro:property name="WHEEL_RADIUS" value="0.08"/>
+    <xacro:property name="WHEEL_THICKNESS" value="0.04"/>
+    <xacro:property name="WHEEL_SEPARATION" value="0.45"/>
+    <!-- Wheel Inertial Properties -->
+    <xacro:property name="WHEEL_M" value="2.9"/>
+    <xacro:property name="WHEEL_COM" value="0 0 0"/>
+    <xacro:property name="WHEEL_Ixx" value="0.00564437"/>
+    <xacro:property name="WHEEL_Iyy" value="0.00564437"/>
+    <xacro:property name="WHEEL_Izz" value="0.01047625"/>
+    <xacro:property name="WHEEL_Ixy" value="0"/>
+    <xacro:property name="WHEEL_Ixz" value="0"/>
+    <xacro:property name="WHEEL_Iyz" value="0"/>
+    <!-- Castor Visual Properties -->
+    <xacro:property name="CASTOR_RADIUS" value="0.035"/>
+    <xacro:property name="CASTOR_THICKNESS" value="0.02"/>
+    <xacro:property name="CASTOR_SEPARATION_X" value="0.46"/>
+    <xacro:property name="CASTOR_SEPARATION_Y" value="0.32"/>
+    <!-- Castor Inertial Properties -->
+    <xacro:property name="CASTOR_M" value="0.2"/>
+    <xacro:property name="CASTOR_COM" value="0 0 0"/>
+    <xacro:property name="CASTOR_Ixx" value="0.00004437"/>
+    <xacro:property name="CASTOR_Iyy" value="0.00004437"/>
+    <xacro:property name="CASTOR_Izz" value="0.00047625"/>
+    <xacro:property name="CASTOR_Ixy" value="0"/>
+    <xacro:property name="CASTOR_Ixz" value="0"/>
+    <xacro:property name="CASTOR_Iyz" value="0"/> 
+    <!-- Castor Visual Properties -->
+    <xacro:property name="LIDAR_RADIUS" value="0.035"/>
+    <xacro:property name="LIDAR_THICKNESS" value="0.04"/>
+    <!-- Colors -->
+    <xacro:property name="BASE_COLOR" value="1 1 1 1"/>
+    <xacro:property name="WHEEL_COLOR" value="0 0 0 1"/>
+    <xacro:property name="CASTOR_COLOR" value="0.5 0.5 0 1"/> 
+    <!-- Joint Properties -->
+    <xacro:property name="U_MAX" value="300"/>
+    <xacro:property name="V_MAX" value="300"/>
+    <xacro:property name="WHEEL_JOINT_DAMP" value="0"/>
+    
+
+</robot>

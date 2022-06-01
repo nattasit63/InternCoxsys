@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx_pole">
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_properties.xacro"/>
+    <xacro:macro name="pole" params="name parent translation">
+        <link name="${name}_pole">
+            <visual>
+                <geometry>
+                    <cylinder radius="${POLE_RADIUS}" length="${POLE_HEIGHT}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${POLE_RADIUS}" length="${POLE_HEIGHT}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${name}_pole_joint" type="fixed">
+            <parent link="${parent}"/>
+            <child link="${name}_pole"/>
+            <origin xyz="${translation}"/>
+        </joint>
+    </xacro:macro>
+</robot>

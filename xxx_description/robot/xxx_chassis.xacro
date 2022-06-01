@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx_chasis">
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_properties.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_pole.xacro"/>
+    <xacro:macro name="chassis" params="">
+        <link name="base_footprint"/>
+        <link name="base_link">
+            <inertial>
+                <origin xyz="${BASE_COM}"/>
+                <mass value="${BASE_M}"/>
+                <inertia 
+                    ixx="${BASE_Ixx}" 
+                    ixy="${BASE_Ixy}" 
+                    ixz="${BASE_Ixz}" 
+                    iyy="${BASE_Iyy}" 
+                    iyz="${BASE_Iyz}" 
+                    izz="${BASE_Izz}"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 -${BASE_MESH_Z_OFFSET}" rpy="0 0 ${PI/2}"/>
+                <geometry>
+                    <mesh filename="${BASE_MESH_PATH}" />
+                    <!-- <box size="${BASE_LENGTH} ${BASE_WIDTH} ${BASE_HEIGHT}"/> -->
+                </geometry>
+                <material name="chassis_color">
+                    <color rgba="${BASE_COLOR}"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <!-- <mesh filename="${BASE_MESH_PATH}" /> -->
+                    <box size="${BASE_LENGTH} ${BASE_WIDTH} ${BASE_HEIGHT}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="base_footprint_to_base_link" type="fixed">
+            <parent link="base_footprint"/>
+            <child link="base_link"/>
+            <origin xyz="0.0 0.0 ${BASE_HEIGHT/2+BASE_ELEVATION}"/>
+        </joint>
+
+        <xacro:pole 
+            name="front_left" 
+            translation="
+                ${POLE_SEPARATION_X/2}
+                ${POLE_SEPARATION_Y/2} 
+                ${(BASE_HEIGHT+POLE_HEIGHT)/2}"  
+            parent="base_link"/>
+        <xacro:pole 
+            name="front_right" 
+            translation="
+                ${POLE_SEPARATION_X/2}
+                ${-POLE_SEPARATION_Y/2} 
+                ${(BASE_HEIGHT+POLE_HEIGHT)/2}"  
+            parent="base_link"/>
+        <xacro:pole 
+            name="back_left" 
+            translation="
+                ${-POLE_SEPARATION_X/2}
+                ${POLE_SEPARATION_Y/2} 
+                ${(BASE_HEIGHT+POLE_HEIGHT)/2}"  
+            parent="base_link"/>
+        <xacro:pole 
+            name="back_right" 
+            translation="
+                ${-POLE_SEPARATION_X/2}
+                ${-POLE_SEPARATION_Y/2} 
+                ${(BASE_HEIGHT+POLE_HEIGHT)/2}"  
+            parent="base_link"/>
+
+    </xacro:macro>
+</robot>

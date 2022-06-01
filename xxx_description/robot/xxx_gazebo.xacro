@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<robot name="xxx_gazebo"  xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="gazebo" params="">
+    <!-- CHASIS -->
+    <gazebo reference="base_link">
+        <mu1>0</mu1>
+        <mu2>0</mu2>
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="front_left_pole">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="front_right_pole">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="back_left_pole">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="back_right_pole">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+
+    <!-- WHEEL -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>xxx</robotNamespace>
+        </plugin>
+    </gazebo>
+    <gazebo reference="left_wheel">
+        <mu1>100</mu1>
+        <mu2>100</mu2>
+        <material>Gazebo/Black</material>
+    </gazebo>
+    <gazebo reference="right_wheel">
+        <mu1>100</mu1>
+        <mu2>100</mu2>
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <!-- CASTER -->
+    <gazebo reference="right_front_castor">
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <material>Gazebo/Yellow</material>
+    </gazebo>  
+    <gazebo reference="left_front_castor">
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <material>Gazebo/Yellow</material>
+    </gazebo>  
+    <gazebo reference="right_rear_castor">
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <material>Gazebo/Yellow</material>
+    </gazebo>  
+    <gazebo reference="left_rear_castor">
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
+        <material>Gazebo/Yellow</material>
+    </gazebo>  
+            
+    <!-- LIDAR -->
+    <gazebo reference="lidar">
+        <material>Gazebo/Blue</material>
+    </gazebo>   
+    <gazebo reference="lidar">
+    <sensor type="ray" name="lidar_plugin">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>7</update_rate>
+        <ray>
+        <scan>
+            <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>6.28319</max_angle>
+            </horizontal>
+        </scan>
+        <range>
+            <min>0.05</min>
+            <max>16</max>
+            <!-- <resolution>0.015</resolution> -->
+            <resolution>0.03</resolution>
+        </range>
+        <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <!-- <stddev>0.02</stddev> -->
+            <stddev>0.03</stddev>
+        </noise>
+        </ray>
+        <plugin name="gazebo_ros_lidar" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>lidar</frameName>
+        </plugin>
+    </sensor>
+  </gazebo>
+
+    <!-- CAMERA -->
+    <gazebo reference="t265">
+        <material>Gazebo/Blue</material>
+    </gazebo>  
+    <gazebo reference="camera">
+        <sensor type="camera" name="camera1">
+          <update_rate>30.0</update_rate>
+          <camera name="head">
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>360</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.02</near>
+              <far>300</far>
+            </clip>
+            <lens>
+                <intrinsics>
+                  <fx>381.36246688113556</fx>
+                  <fy>381.36246688113556</fy>
+                  <cx>320.5</cx>
+                  <cy>180.5</cy>
+                  <s>0</s>
+                </intrinsics>
+            </lens>
+            <noise>
+              <type>gaussian</type>
+              <!-- Noise is sampled independently per pixel on each frame.
+                   That pixel's noise value is added to each of its color
+                   channels, which at that point lie in the range [0,1]. -->
+              <mean>0.0</mean>
+              <stddev>0.000001</stddev>
+            </noise>
+          </camera>
+          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0.0</updateRate>
+            <cameraName>camera</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_optical</frameName>
+            <hackBaseline>0.07</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+          </plugin>
+        </sensor>
+    </gazebo>
+    <gazebo>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+          <alwaysOn>true</alwaysOn>
+          <bodyName>base_footprint</bodyName>
+          <topicName>imu</topicName>
+          <serviceName>imu_service</serviceName>
+          <gaussianNoise>0.0</gaussianNoise>
+          <updateRate>20.0</updateRate>
+        </plugin>
+    </gazebo>
+    <!-- ULTRASONIC -->
+    <gazebo reference="ultrasonic1">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic2">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic3">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic4">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic5">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic6">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic7">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="ultrasonic8">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+</xacro:macro>
+</robot>

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx_castor">
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_properties.xacro"/>
+    <xacro:macro name="castor" params="name translation rotation parent">
+        <link name="${name}_castor">
+            <inertial>
+                <origin xyz="${CASTOR_COM}"/>
+                <mass value="${CASTOR_M}"/>
+                <inertia 
+                    ixx="${CASTOR_Ixx}" 
+                    ixy="${CASTOR_Ixy}" 
+                    ixz="${CASTOR_Ixz}" 
+                    iyy="${CASTOR_Iyy}" 
+                    iyz="${CASTOR_Iyz}" 
+                    izz="${CASTOR_Izz}"/>
+            </inertial>
+            <!--No need for visual since it will be combined in meshes-->
+            <visual>
+                <geometry>
+                    <cylinder 
+                        radius="${CASTOR_RADIUS}" 
+                        length="${CASTOR_THICKNESS}"/>
+                </geometry>
+                <origin rpy="${PI/2} 0.0 0.0"/>
+                <material name="${name}_castor_color">
+                    <color rgba="${CASTOR_COLOR}"/>
+                </material>                
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder 
+                        radius="${CASTOR_RADIUS}" 
+                        length="${CASTOR_THICKNESS}"/>
+                </geometry>
+                <origin rpy="${PI/2} 0.0 0.0"/>                
+            </collision>
+        </link>
+        <joint name="${name}_castor_joint" type="continuous">
+            <parent link="${parent}"/>
+            <child link="${name}_castor"/>
+            <origin xyz="${translation}" rpy="${rotation}"/>
+            <axis xyz="0.0 1.0 0.0"/>
+        </joint>
+         
+    </xacro:macro>
+</robot>

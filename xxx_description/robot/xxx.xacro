@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx">
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_properties.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_chassis.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_wheel.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_castor.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_sensor.xacro"/>
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_gazebo.xacro"/>
+    <xacro:chassis/>
+    <xacro:wheel 
+        name="left" 
+        translation="
+            0 
+            ${WHEEL_SEPARATION/2} 
+            ${WHEEL_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>
+    <xacro:wheel 
+        name="right" 
+        translation="
+            0 
+            ${-WHEEL_SEPARATION/2} 
+            ${WHEEL_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>
+    <xacro:castor 
+        name="right_front" 
+        translation="
+            ${CASTOR_SEPARATION_X/2} 
+            ${CASTOR_SEPARATION_Y/2} 
+            ${CASTOR_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>   
+    <xacro:castor 
+        name="left_front" 
+        translation="
+            ${CASTOR_SEPARATION_X/2} 
+            ${-CASTOR_SEPARATION_Y/2} 
+            ${CASTOR_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>    
+    <xacro:castor 
+        name="right_rear" 
+        translation="
+            ${-CASTOR_SEPARATION_X/2} 
+            ${CASTOR_SEPARATION_Y/2} 
+            ${CASTOR_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>   
+    <xacro:castor 
+        name="left_rear" 
+        translation="
+            ${-CASTOR_SEPARATION_X/2} 
+            ${-CASTOR_SEPARATION_Y/2} 
+            ${CASTOR_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)}" 
+        rotation="0 0 0" 
+        parent="base_link"/>  
+    <xacro:sensor />
+    <xacro:gazebo />  
+</robot>

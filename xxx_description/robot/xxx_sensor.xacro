@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx_sensor">
+    <xacro:include filename="$(find xxx_description)/urdf/xxx_properties.xacro"/>
+    <xacro:macro name="sensor" params="">
+        <link name="lidar">
+            <visual>
+                <geometry>
+                    <cylinder 
+                        radius="${LIDAR_RADIUS}" 
+                        length="${LIDAR_THICKNESS}"/>
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="lidar_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="lidar"/>
+            <origin xyz="0.22 0 ${(BASE_HEIGHT+LIDAR_THICKNESS)/2}" rpy="0 0 0"/>
+        </joint>
+
+        <link name="t265">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.025 0.09 0.025"/>
+                </geometry>
+            </visual>
+        </link>
+        <joint name="t265_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="t265" />
+            <origin xyz="-0.3195 -0.0081 0.17" rpy="0 0 3.14159265" /> 
+        </joint>
+
+        <link name="camera">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.025 0.09 0.025"/>
+                </geometry>
+            </visual>
+        </link>
+        <link name="camera_optical"/>
+        <joint name="camera_joint" type="fixed">
+            <parent link="base_link" />
+            <child link="camera" />
+            <origin xyz="0.317 0 0.1" rpy="0 0 0" /> 
+        </joint>
+        <joint name="camera_optical_joint" type="fixed">
+            <parent link="camera" />
+            <child link="camera_optical" />
+            <origin xyz="0 0 0" rpy="-1.570796325 0 -1.570796325" /> 
+        </joint>
+        
+        <link name="ultrasonic1">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic1_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic1"/>
+            <origin xyz="0.32 0.22 0" rpy="0 0 0.087" />
+        </joint>
+           
+
+        <link name="ultrasonic2">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic2_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic2"/>
+            <origin xyz="0.32 0.15 0" rpy="0 0 0" />
+        </joint>
+           
+
+        <link name="ultrasonic3">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic3_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic3"/>
+            <origin xyz="0.32 -0.15 0" rpy="0 0 0" />
+        </joint>
+           
+
+        <link name="ultrasonic4">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic4_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic4"/>
+            <origin xyz="0.32 -0.22 0" rpy="0 0 -0.087" />
+        </joint>
+           
+
+        <link name="ultrasonic5">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic5_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic5"/>
+            <origin xyz="-0.29 -0.23 0" rpy="0 0 3.57" />
+        </joint>
+           
+
+        <link name="ultrasonic6">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic6_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic6"/>
+            <origin xyz="-0.31 -0.17 0" rpy="0 0 3.23" />
+        </joint>
+           
+
+        <link name="ultrasonic7">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic7_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic7"/>
+            <origin xyz="-0.31 0.17 0" rpy="0 0 3.05" />
+        </joint>
+           
+
+        <link name="ultrasonic8">
+            <visual>
+                <geometry>
+                    <sphere 
+                        radius="0.01" />
+                </geometry>
+                <origin rpy="0.0 0.0 0.0"/>
+            </visual>
+        </link>
+        <joint name="ultrasonic8_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="ultrasonic8"/>
+            <origin xyz="-0.29 0.23 0" rpy="0 0 2.70" />
+        </joint>
+           
+
+    </xacro:macro>
+</robot>
