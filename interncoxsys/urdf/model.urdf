@@ -1,0 +1,560 @@
+<robot name="xxx">
+<link name="base_footprint"/>
+<link name="base_link">
+    <inertial>
+    <origin xyz="0.0002 0.0001 -0.0001"/>
+    <mass value="40.0"/>
+    <inertia ixx="1.79366667" ixy="0" ixz="0" iyy="1.28666667" iyz="0" izz="2.30966667"/></inertial>
+    <visual>
+        <origin rpy="0 0 1.5707963267948966" xyz="0 0 -0.018"/>
+        <geometry>
+            <mesh filename="file://src/xxx_description/meshes/coconut.stl"/>
+            <!-- <box size="${BASE_LENGTH} ${BASE_WIDTH} ${BASE_HEIGHT}"/> -->
+        </geometry>
+        <material name="chassis_color">
+            <color rgba="1 1 1 1"/>
+        </material>
+    </visual>
+    <collision>
+        <geometry>
+            <!-- <mesh filename="${BASE_MESH_PATH}" /> -->
+            <box size="0.65 0.55 0.25"/>
+        </geometry></collision>
+</link>
+<joint name="base_footprint_to_base_link" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0.165"/>
+</joint>
+<link name="front_left_pole">
+    <visual>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="front_left_pole_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_left_pole"/>
+    <origin xyz="                 0.125                 0.125                  0.15"/>
+</joint>
+<link name="front_right_pole">
+    <visual>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="front_right_pole_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_right_pole"/>
+    <origin xyz="                 0.125                 -0.125                  0.15"/>
+</joint>
+<link name="back_left_pole">
+    <visual>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="back_left_pole_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="back_left_pole"/>
+    <origin xyz="                 -0.125                 0.125                  0.15"/>
+</joint>
+<link name="back_right_pole">
+    <visual>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.05" radius="0.015"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="back_right_pole_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="back_right_pole"/>
+    <origin xyz="                 -0.125                 -0.125                  0.15"/>
+</joint>
+<link name="left_wheel">
+    <inertial>
+        <origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
+        <mass value="2.9"/>
+        <inertia ixx="0.00564437" ixy="0" ixz="0" iyy="0.00564437" iyz="0" izz="0.01047625"/>
+    </inertial>
+    <visual>
+        <origin rpy="1.5707963267948966 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <cylinder length="0.04" radius="0.08"/>
+        </geometry>
+        <material name="left_wheel_color">
+            <color rgba="0 0 0 1"/>
+        </material>
+    </visual>
+    <collision>
+        <origin rpy="1.5707963267948966 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <cylinder length="0.04" radius="0.08"/>
+        </geometry>
+    </collision>
+</link>
+<joint name="left_wheel_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="             0              0.225              -0.085"/>
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <limit effort="300" velocity="300"/>
+    <dynamics damping="0"/>
+</joint>
+<transmission name="left_wheel_motor">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_wheel_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_wheel_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+</transmission>
+<link name="right_wheel">
+    <inertial>
+        <origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
+        <mass value="2.9"/>
+    <inertia ixx="0.00564437" ixy="0" ixz="0" iyy="0.00564437" iyz="0" izz="0.01047625"/></inertial>
+    <visual>
+        <origin rpy="1.5707963267948966 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+            <cylinder length="0.04" radius="0.08"/>
+        </geometry>
+        <material name="right_wheel_color">
+            <color rgba="0 0 0 1"/>
+        </material>
+    </visual>
+    <collision>
+    <origin rpy="1.5707963267948966 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    <geometry>
+        <cylinder length="0.04" radius="0.08"/>
+    </geometry>
+    </collision>
+</link>
+<joint name="right_wheel_joint" type="continuous">
+    <origin rpy="0 0 0" xyz="             0              -0.225              -0.085"/>
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <limit effort="300" velocity="300"/>
+    <dynamics damping="0"/>
+</joint>
+<transmission name="right_wheel_motor">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_wheel_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_wheel_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+</transmission>
+<link name="right_front_castor">
+    <inertial>
+        <origin xyz="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia ixx="4.437e-05" ixy="0" ixz="0" iyy="4.437e-05" iyz="0" izz="0.00047625"/>
+    </inertial>
+    <!--No need for visual since it will be combined in meshes-->
+    <visual>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+        <material name="right_front_castor_color">
+            <color rgba="0.5 0.5 0 1"/>
+        </material>
+    </visual>
+    <collision>
+    <geometry>
+        <cylinder length="0.02" radius="0.035"/>
+    </geometry>
+    <origin rpy="1.5707963267948966 0.0 0.0"/>
+    </collision>
+</link>
+<joint name="right_front_castor_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_front_castor"/>
+    <origin rpy="0 0 0" xyz="             0.23              0.16              -0.13"/>
+    <axis xyz="0.0 1.0 0.0"/>
+</joint>
+<link name="left_front_castor">
+    <inertial>
+        <origin xyz="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia ixx="4.437e-05" ixy="0" ixz="0" iyy="4.437e-05" iyz="0" izz="0.00047625"/>
+    </inertial>
+    <!--No need for visual since it will be combined in meshes-->
+    <visual>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+        <material name="left_front_castor_color">
+            <color rgba="0.5 0.5 0 1"/>
+        </material>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+    </collision>
+</link>
+<joint name="left_front_castor_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_front_castor"/>
+    <origin rpy="0 0 0" xyz="             0.23              -0.16              -0.13"/>
+    <axis xyz="0.0 1.0 0.0"/>
+</joint>
+<link name="right_rear_castor">
+    <inertial>
+        <origin xyz="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia ixx="4.437e-05" ixy="0" ixz="0" iyy="4.437e-05" iyz="0" izz="0.00047625"/>
+    </inertial>
+    <!--No need for visual since it will be combined in meshes-->
+    <visual>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+            <material name="right_rear_castor_color">
+        <color rgba="0.5 0.5 0 1"/>
+        </material>
+    </visual>
+    <collision>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+    </collision>
+</link>
+<joint name="right_rear_castor_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_rear_castor"/>
+    <origin rpy="0 0 0" xyz="             -0.23              0.16              -0.13"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    </joint>
+<link name="left_rear_castor">
+    <inertial>
+        <origin xyz="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia ixx="4.437e-05" ixy="0" ixz="0" iyy="4.437e-05" iyz="0" izz="0.00047625"/>
+    </inertial>
+    <!--No need for visual since it will be combined in meshes-->
+    <visual>
+        <geometry>
+            <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+        <material name="left_rear_castor_color">
+            <color rgba="0.5 0.5 0 1"/>
+        </material>
+    </visual>
+    <collision>
+        <geometry>
+        <cylinder length="0.02" radius="0.035"/>
+        </geometry>
+        <origin rpy="1.5707963267948966 0.0 0.0"/>
+    </collision>
+</link>
+<joint name="left_rear_castor_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_rear_castor"/>
+    <origin rpy="0 0 0" xyz="             -0.23              -0.16              -0.13"/>
+    <axis xyz="0.0 1.0 0.0"/>
+</joint>
+<link name="lidar">
+    <visual>
+        <geometry>
+            <cylinder length="0.04" radius="0.035"/>
+        </geometry><origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar"/>
+    <origin rpy="0 0 0" xyz="0.22 0 0.145"/>
+</joint>
+<link name="t265">
+    <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <box size="0.025 0.09 0.025"/>
+        </geometry>
+    </visual>
+</link>
+<joint name="t265_joint" type="fixed">
+<parent link="base_link"/>
+<child link="t265"/>
+<origin rpy="0 0 3.14159265" xyz="-0.3195 -0.0081 0.17"/>
+</joint>
+<link name="camera">
+    <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+            <box size="0.025 0.09 0.025"/>
+        </geometry>
+    </visual>
+</link>
+<link name="camera_optical"/>
+<joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera"/>
+    <origin rpy="0 0 0" xyz="0.317 0 0.1"/>
+</joint>
+<joint name="camera_optical_joint" type="fixed">
+    <parent link="camera"/>
+    <child link="camera_optical"/>
+    <origin rpy="-1.570796325 0 -1.570796325" xyz="0 0 0"/>
+</joint>
+<link name="ultrasonic1">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic1_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic1"/>
+    <origin rpy="0 0 0.087" xyz="0.32 0.22 0"/>
+</joint>
+<link name="ultrasonic2">
+    <visual>
+        <geometry>
+        <sphere radius="0.01"/>
+            </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic2_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic2"/>
+    <origin rpy="0 0 0" xyz="0.32 0.15 0"/>
+</joint>
+<link name="ultrasonic3">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic3_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic3"/>
+    <origin rpy="0 0 0" xyz="0.32 -0.15 0"/>
+</joint>
+<link name="ultrasonic4">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic4_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic4"/>
+    <origin rpy="0 0 -0.087" xyz="0.32 -0.22 0"/>
+</joint>
+<link name="ultrasonic5">
+    <visual>
+        <geometry>
+        <sphere radius="0.01"/>
+            </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic5_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic5"/>
+    <origin rpy="0 0 3.57" xyz="-0.29 -0.23 0"/>
+</joint>
+<link name="ultrasonic6">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic6_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic6"/>
+    <origin rpy="0 0 3.23" xyz="-0.31 -0.17 0"/>
+</joint>
+<link name="ultrasonic7">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic7_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic7"/>
+    <origin rpy="0 0 3.05" xyz="-0.31 0.17 0"/>
+</joint>    
+<link name="ultrasonic8">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/>
+        </geometry>
+        <origin rpy="0.0 0.0 0.0"/>
+    </visual>
+</link>
+<joint name="ultrasonic8_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="ultrasonic8"/>
+    <origin rpy="0 0 2.70" xyz="-0.29 0.23 0"/>
+</joint>
+<!-- GAZEBO PLUGIN -->
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
+<!-- CHASIS -->
+<gazebo reference="base_link">
+    <mu1>0</mu1>
+    <mu2>0</mu2>
+    <material>Gazebo/Orange</material>
+</gazebo>
+<gazebo reference="front_left_pole">
+    <material>Gazebo/Orange</material>
+</gazebo>
+<gazebo reference="front_right_pole">
+    <material>Gazebo/Orange</material>
+</gazebo>
+<gazebo reference="back_left_pole">
+    <material>Gazebo/Orange</material>
+</gazebo>
+<gazebo reference="back_right_pole">
+    <material>Gazebo/Orange</material>
+</gazebo>
+<!-- WHEEL -->
+<gazebo reference="left_wheel">
+    <mu1>100</mu1>
+    <mu2>100</mu2>
+    <material>Gazebo/Black</material>
+</gazebo>
+<gazebo reference="right_wheel">
+    <mu1>100</mu1>
+    <mu2>100</mu2>
+    <material>Gazebo/Black</material>
+</gazebo>
+<!-- CASTER -->
+<gazebo reference="right_front_castor">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <material>Gazebo/Yellow</material>
+</gazebo>
+<gazebo reference="left_front_castor">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <material>Gazebo/Yellow</material>
+</gazebo>
+<gazebo reference="right_rear_castor">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <material>Gazebo/Yellow</material>
+</gazebo>
+<gazebo reference="left_rear_castor">
+    <mu1>0.1</mu1>
+    <mu2>0.1</mu2>
+    <material>Gazebo/Yellow</material>
+</gazebo>
+<!-- LIDAR -->
+<gazebo reference="lidar">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<!-- CAMERA -->
+<gazebo reference="t265">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<!-- ULTRASONIC -->
+<gazebo reference="ultrasonic1">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic2">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic3">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic4">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic5">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic6">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic7">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo reference="ultrasonic8">
+    <material>Gazebo/Blue</material>
+</gazebo>
+<gazebo>
+    <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
+        <updateRate>100</updateRate>
+        <!-- wheels -->
+        <left_joint>left_wheel_joint</left_joint>
+        <right_joint>right_wheel_joint</right_joint>
+
+        <!-- kinematics -->
+        <wheel_separation>0.4</wheel_separation>
+        <wheel_diameter>0.1</wheel_diameter>
+
+        <!-- limits -->
+        <max_wheel_torque>2</max_wheel_torque>
+        <max_wheel_acceleration>0.5</max_wheel_acceleration>
+        <commandTopic>cmd_vel</commandTopic>
+        <!-- output -->
+        <!-- <odometry_frame>odom</odometry_frame>
+        <robot_base_frame>base_footprint</robot_base_frame> -->
+        <publish_odom>true</publish_odom>
+        <publish_odom_tf>true</publish_odom_tf>
+        <publish_wheel_tf>true</publish_wheel_tf>
+        <odometryTopic>odom</odometryTopic>
+
+        <!-- Odometry frame, defaults to `odom` -->
+        <odometryFrame>odom</odometryFrame>
+        <!-- Robot frame to calculate odometry from, defaults to `base_footprint` -->
+        <robotBaseFrame>base_footprint</robotBaseFrame>
+        <odometryFrame>world</odometryFrame>
+        <odometryRate>20.0</odometryRate>
+    </plugin>
+
+</gazebo>
+
+
+
+</robot>
