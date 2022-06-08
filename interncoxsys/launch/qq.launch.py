@@ -29,15 +29,15 @@ def generate_launch_description():
     
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
-                                   '-entity', 'Panda'],
+                                   '-entity', 'Coconut'],
                         output='screen')
-
-    
+  
     return LaunchDescription([
-        gazebo,
+        
         robot_state_publisher_node ,
         spawn_entity,
-   
+        gazebo,
+       
         
         
     ])
