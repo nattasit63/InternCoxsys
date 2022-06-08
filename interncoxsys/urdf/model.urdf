@@ -539,14 +539,14 @@
             <!-- limits -->
             <max_wheel_torque>2</max_wheel_torque>
             <max_wheel_acceleration>0.5</max_wheel_acceleration>
-            <commandTopic>cmd_vel/coconut</commandTopic>
+            <commandTopic>cmd_vel</commandTopic>
             <!-- output -->
             <!-- <odometry_frame>odom</odometry_frame>
             <robot_base_frame>base_footprint</robot_base_frame> -->
             <publish_odom>true</publish_odom>
             <publish_odom_tf>true</publish_odom_tf>
             <publish_wheel_tf>true</publish_wheel_tf>
-            <odometryTopic>odom/coconut</odometryTopic>
+            <odometryTopic>odom</odometryTopic>
             
 
             <!-- Odometry frame, defaults to `odom` -->
@@ -555,7 +555,12 @@
             <robotBaseFrame>base_footprint</robotBaseFrame>
             <odometryFrame>world</odometryFrame>
             <odometryRate>20.0</odometryRate>
+            <ros>
+                <remapping>odom:=coconut/odom</remapping>
+                <remapping>cmd_vel:=coconut/cmd_vel</remapping>
+            </ros>
         </plugin>
+        
 
     </gazebo>
 
@@ -591,7 +596,7 @@
 		    </ray>
 		    <plugin name="lidar_controller" filename="libgazebo_ros_ray_sensor.so">
 		        <ros>
-		            <remapping>~/out:=lidar/coconut</remapping>
+		            <remapping>~/out:=coconut/lidar</remapping>
 		        </ros>
 		        <output_type>sensor_msgs/LaserScan</output_type>
 				<radiation_type>infrared</radiation_type>
@@ -671,10 +676,61 @@
             <initial_orientation_as_reference>false</initial_orientation_as_reference>
             <frame_name>imu_link</frame_name>
             <ros>
-            <namespace>/imu</namespace>
-            <remapping>~/out:=coconut</remapping>
+            <namespace>/coconut</namespace>
+            <remapping>~/out:=imu</remapping>
             </ros>
         </plugin>
+        </sensor>
+    </gazebo>
+    <gazebo reference="camera">
+        <sensor type="camera" name="camera">
+          <update_rate>30.0</update_rate>
+          <camera name="head">
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>360</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.02</near>
+              <far>300</far>
+            </clip>
+            <lens>
+                <intrinsics>
+                  <fx>381.36246688113556</fx>
+                  <fy>381.36246688113556</fy>
+                  <cx>320.5</cx>
+                  <cy>180.5</cy>
+                  <s>0</s>
+                </intrinsics>
+            </lens>
+            <noise>
+              <type>gaussian</type>
+              <!-- Noise is sampled independently per pixel on each frame.
+                   That pixel's noise value is added to each of its color
+                   channels, which at that point lie in the range [0,1]. -->
+              <mean>0.0</mean>
+              <stddev>0.000001</stddev>
+            </noise>
+          </camera>
+          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0.0</updateRate>
+            <cameraName>camera</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_optical</frameName>
+            <hackBaseline>0.07</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            <ros>
+                <namespace>/coconut</namespace>
+            </ros>
+          </plugin>
         </sensor>
     </gazebo>
 
