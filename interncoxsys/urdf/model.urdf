@@ -1,5 +1,6 @@
-<robot name="xxx">
+<robot name="coconut">
     <link name="base_footprint"/>
+
     <link name="base_link">
         <inertial>
         <origin xyz="0.0002 0.0001 -0.0001"/>
@@ -8,7 +9,7 @@
         <visual>
             <origin rpy="0 0 1.5707963267948966" xyz="0 0 -0.018"/>
             <geometry>
-                <mesh filename="file://src/xxx_description/meshes/coconut.stl"/>
+                <mesh filename="file://src/interncoxsys/meshes/coconut.stl"/>
                 <!-- <box size="${BASE_LENGTH} ${BASE_WIDTH} ${BASE_HEIGHT}"/> -->
             </geometry>
             <material name="chassis_color">
@@ -21,6 +22,7 @@
                 <box size="0.65 0.55 0.25"/>
             </geometry></collision>
     </link>
+
     <joint name="base_footprint_to_base_link" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
@@ -43,6 +45,7 @@
         <child link="front_left_pole"/>
         <origin xyz="                 0.125                 0.125                  0.15"/>
     </joint>
+
     <link name="front_right_pole">
         <visual>
             <geometry>
@@ -55,11 +58,13 @@
             </geometry>
         </collision>
     </link>
+
     <joint name="front_right_pole_joint" type="fixed">
         <parent link="base_link"/>
         <child link="front_right_pole"/>
         <origin xyz="                 0.125                 -0.125                  0.15"/>
     </joint>
+
     <link name="back_left_pole">
         <visual>
             <geometry>
@@ -72,11 +77,13 @@
             </geometry>
         </collision>
     </link>
+
     <joint name="back_left_pole_joint" type="fixed">
         <parent link="base_link"/>
         <child link="back_left_pole"/>
         <origin xyz="                 -0.125                 0.125                  0.15"/>
     </joint>
+
     <link name="back_right_pole">
         <visual>
             <geometry>
@@ -94,6 +101,7 @@
         <child link="back_right_pole"/>
         <origin xyz="                 -0.125                 -0.125                  0.15"/>
     </joint>
+
     <link name="left_wheel">
         <inertial>
             <origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
@@ -116,6 +124,7 @@
             </geometry>
         </collision>
     </link>
+
     <joint name="left_wheel_joint" type="continuous">
         <origin rpy="0 0 0" xyz="             0              0.225              -0.085"/>
         <parent link="base_link"/>
@@ -124,16 +133,9 @@
         <limit effort="300" velocity="300"/>
         <dynamics damping="0"/>
     </joint>
-    <transmission name="left_wheel_motor">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="left_wheel_joint">
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="left_wheel_motor">
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-    </transmission>
+
+ 
+
     <link name="right_wheel">
         <inertial>
             <origin rpy="0.0 0.0 0.0" xyz="0 0 0"/>
@@ -155,6 +157,7 @@
         </geometry>
         </collision>
     </link>
+    
     <joint name="right_wheel_joint" type="continuous">
         <origin rpy="0 0 0" xyz="             0              -0.225              -0.085"/>
         <parent link="base_link"/>
@@ -163,16 +166,11 @@
         <limit effort="300" velocity="300"/>
         <dynamics damping="0"/>
     </joint>
-    <transmission name="right_wheel_motor">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="right_wheel_joint">
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="right_wheel_motor">
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-    </transmission>
+
+
+
+
+
     <link name="right_front_castor">
         <inertial>
             <origin xyz="0 0 0"/>
@@ -309,11 +307,13 @@
             </geometry>
         </visual>
     </link>
+
     <joint name="t265_joint" type="fixed">
     <parent link="base_link"/>
     <child link="t265"/>
     <origin rpy="0 0 3.14159265" xyz="-0.3195 -0.0081 0.17"/>
     </joint>
+
     <link name="camera">
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -322,17 +322,24 @@
             </geometry>
         </visual>
     </link>
+
+
+
     <link name="camera_optical"/>
     <joint name="camera_joint" type="fixed">
         <parent link="base_link"/>
         <child link="camera"/>
         <origin rpy="0 0 0" xyz="0.317 0 0.1"/>
     </joint>
+
     <joint name="camera_optical_joint" type="fixed">
         <parent link="camera"/>
         <child link="camera_optical"/>
         <origin rpy="-1.570796325 0 -1.570796325" xyz="0 0 0"/>
     </joint>
+
+
+
     <link name="ultrasonic1">
         <visual>
             <geometry>
@@ -457,10 +464,17 @@
     <gazebo reference="back_right_pole">
         <material>Gazebo/Orange</material>
     </gazebo>
+
+
+
+    
+
+
+
+
+
     <!-- WHEEL -->
-     <plugin name="gazebo_ros2_control" filename="libgazebo_ros_control.so">
-            <robotNamespace>xxx</robotNamespace>
-    </plugin>
+     
     <gazebo reference="left_wheel">
         <mu1>100</mu1>
         <mu2>100</mu2>
@@ -525,46 +539,7 @@
     <gazebo reference="ultrasonic8">
         <material>Gazebo/Blue</material>
     </gazebo>
-
-    <gazebo>
-        <plugin name='differential_drive' filename='libgazebo_ros_diff_drive.so'>
-            <updateRate>100</updateRate>
-            <!-- wheels -->
-            <left_joint>left_wheel_joint</left_joint>
-            <right_joint>right_wheel_joint</right_joint>
-
-            <!-- kinematics -->
-            <wheel_separation>0.4</wheel_separation>
-            <wheel_diameter>0.1</wheel_diameter>
-
-            <!-- limits -->
-            <max_wheel_torque>2</max_wheel_torque>
-            <max_wheel_acceleration>0.5</max_wheel_acceleration>
-            <commandTopic>cmd_vel</commandTopic>
-            <!-- output -->
-            <!-- <odometry_frame>odom</odometry_frame>
-            <robot_base_frame>base_footprint</robot_base_frame> -->
-            <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
-            <publish_wheel_tf>true</publish_wheel_tf>
-            <odometryTopic>odom</odometryTopic>
-            
-
-            <!-- Odometry frame, defaults to `odom` -->
-            <odometryFrame>odom</odometryFrame>
-            <!-- Robot frame to calculate odometry from, defaults to `base_footprint` -->
-            <robotBaseFrame>base_footprint</robotBaseFrame>
-            <odometryFrame>world</odometryFrame>
-            <odometryRate>20.0</odometryRate>
-            <ros>
-                <remapping>odom:=coconut/odom</remapping>
-                <remapping>cmd_vel:=coconut/cmd_vel</remapping>
-            </ros>
-        </plugin>
-    </gazebo>
-
-
-
+    
 
     <gazebo reference="lidar">
 		<sensor type="ray" name="head_hokuyo_sensor">
@@ -684,6 +659,7 @@
         </plugin>
         </sensor>
     </gazebo>
+
     <gazebo reference="camera">
         <sensor type="camera" name="camera">
           <update_rate>30.0</update_rate>
@@ -737,5 +713,58 @@
     </gazebo>
 
 
+    
 
+    <gazebo>
+        <plugin name='differential_drive' filename='libgazebo_ros_diff_drive.so'>
+            <updateRate>100</updateRate>
+            <!-- wheels -->
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+
+            <!-- kinematics -->
+            <wheel_separation>0.45</wheel_separation>
+            <wheel_diameter>0.16</wheel_diameter>
+
+            <!-- limits -->
+            <max_wheel_torque>300</max_wheel_torque>
+            <max_wheel_acceleration>10</max_wheel_acceleration>
+            <commandTopic>cmd_vel</commandTopic>
+            <!-- output -->
+           
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>false</publish_wheel_tf>
+
+            <odometry_topic>odom</odometry_topic>
+            <odometry_frame>odom</odometry_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+
+
+            <odometryRate>20.0</odometryRate>
+           
+            <ros>
+                <remapping>odom:=coconut/odom</remapping>
+                <remapping>cmd_vel:=coconut/cmd_vel</remapping>
+            </ros>
+        </plugin>
+        
+
+    </gazebo>
+
+    <gazebo>
+        <plugin name="coconut_joint_state" filename="libgazebo_ros_joint_state_publisher.so">
+        <ros>
+            <remapping>~/out:=joint_states</remapping>
+        </ros>
+        <update_rate>30</update_rate>
+        <joint_name>left_wheel_joint</joint_name>
+        <joint_name>right_wheel_joint</joint_name>
+
+        <joint_name>left_front_castor_joint</joint_name>
+        <joint_name>right_front_castor_joint</joint_name>
+        <joint_name>right_rear_castor_joint</joint_name>
+        <joint_name>left_rear_castor_joint</joint_name>
+        </plugin>      
+    </gazebo>
 </robot>
