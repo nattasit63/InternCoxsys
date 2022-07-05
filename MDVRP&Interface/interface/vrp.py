@@ -7,19 +7,14 @@ from networkx import DiGraph, from_numpy_matrix, relabel_nodes, set_node_attribu
 from numpy import array
 from vrpy import VehicleRoutingProblem
 
-# with open('/home/natta/thesis_ws/src/interface/config/example_mdvrp.json','r') as f:
-#     data = json.load(f)
-# nodes_json = data.get('nodes')
-# for n,p in nodes_json.items():
-#     print (n)
-
-
 G = nx.Graph()
 
-class MDVRP():
+class VRPPD():
     def __init__(self):
+        self.pickup_node =[]
+        self.depot_node =[]
+        self.dropoff_node =[]
         self.nodelist=[]
-        self.nodepos=[]
         self.astar_path = 0
         self.astar_path_cost=[]
         self.adjMatrix=[]
@@ -28,11 +23,9 @@ class MDVRP():
         self.prob = 0
         self.route = []
         self.route_astar = []
-        self.depot_edge_list = []
-        self.depot_cost_matrix = []
-    
+        self.nodepos=[]
     def open_config(self):
-        with open('/home/natta/thesis_ws/src/interface/config/example_mdvrp.json','r') as f:
+        with open('/home/natta/thesis_ws/src/interface/config/example_vrppd.json','r') as f:
             self.data = json.load(f)
         self.nodes_json = self.data.get('nodes')
         self.edges_json = self.data.get('edges')
@@ -44,14 +37,13 @@ class MDVRP():
             G.add_node(str(n),pos=p)
         for s,e in self.edges_json.items():  #Add edge from yaml
             G.add_edge(str(e[0]),str(e[1]),weight = e[2])
-            self.astar_path_cost.append(e[2])
-        
+            self.astar_path_cost.append(e[2])      
         return 1
-
+        
     def astar(self,graph,start_node,end_node):
         self.astar_path = nx.astar_path(graph,str(start_node),str(end_node), heuristic = None ,weight='weight')
         return self.astar_path
-    
+
     def adjacency_matrix(self):
         sum=0
         size = len(self.nodelist)
@@ -85,50 +77,3 @@ class MDVRP():
                                     sum = e[2]
                 self.adjMatrix[i][j]= sum
         return self.adjMatrix
-
-    def separate_depot(self):
-        sub_edge_list=[]
-        edge_list=[]
-        for s,e in self.edges_json.items():
-            sub_edge_list.append([e[0],e[1]])
-        edge_list+=sub_edge_list      
-        for depot in self.depot_json:
-            depot_edge=[]
-            now_node = 0
-            for j in range(len(edge_list)):
-                if edge_list[j][0]==depot:
-                    depot_edge.append( edge_list[j][0])
-                    depot_edge.append( edge_list[j][1])
-                    now_node = edge_list[j][1]
-                    for k in range(len(edge_list)):
-                            if now_node==edge_list[k][0]:
-                                depot_edge.append(edge_list[k][1])
-                                now_node=edge_list[k][1]
-                            else:
-                                pass
-                # print(depot_edge)
-                final = set(depot_edge)
-                final = list(final)
-            self.depot_edge_list.append(final)
-        return self.depot_edge_list
-    
-    def depot_matrix(self):
-        self.separate_depot()
-        not_in_list=[]
-        sub_matrix =[]
-        for i in range(0,len(self.nodelist)):
-            self.nodelist[i] = int(self.nodelist[i])
-        mainset = set(self.nodelist)
-        for j in self.depot_edge_list:
-            subset = set(j)
-            not_in_list.append(list(mainset-subset))
-        for i in range(0,len(not_in_list)):
-            sub_matrix = self.adjMatrix.copy()
-            for j in range(0,len(not_in_list[i])):
-                sub_matrix[not_in_list[i][j]] =0
-                sub_matrix[:,not_in_list[i][j]]=0
-            self.depot_cost_matrix.append(sub_matrix)
-        self.depot_cost_matrix = np.array(self.depot_cost_matrix)
-        return self.depot_cost_matrix
-
-    
