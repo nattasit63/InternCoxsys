@@ -1,3 +1,4 @@
+from time import time
 import rclpy
 from rclpy.node import Node
 import tkinter as tk
@@ -5,9 +6,13 @@ from tkinter import *
 from tkinter import messagebox
 import sys
 from tkinter import Tk, font , filedialog
+import tk_
 from tk_ import TK_ 
-from PIL import ImageTk,Image
+import drawing
 from drawing import Drawing
+from write_file import Write_file
+from PIL import ImageTk,Image
+
 import cv2
 import yaml
 
@@ -17,7 +22,7 @@ class GUI(Node):
         super().__init__('gui')
         self._tk = TK_()
         self.draw = Drawing()
-
+        self.write_file = Write_file()
         #Initial Value
         self.mode = 0
         self.clear = 0
@@ -27,8 +32,9 @@ class GUI(Node):
         self.node_type_val = 0
         self.timer_period = 300
         self.pg_quit = 0
+        self.info_to_write = []
         #Initial screen
-        screen_width = 1376
+        screen_width = 1200
         self.w = screen_width
         screen_height = 750
         self.h = screen_height
@@ -151,13 +157,27 @@ class GUI(Node):
             self._tk.create_txt_pos('Total Depot    : ' + str(self.draw.amount_depot),w/68.8+w/13.76,h/37.5+180+40 ,"light grey",self.bg_color)
             self._tk.create_txt_pos('Total Customer : ' + str(self.draw.amount_customer),w/68.8+w/13.76,h/37.5+180+40+40 ,"light grey",self.bg_color)
             self.mode=13
-            # print(self.draw.amount_depot,self.draw.amount_customer)
+
+      
+        elif self.mode == 13 :
+            if self._tk.info_root_active==0:
+                self._tk.create_btn(self.root,'Input Data',int(2),int(6),self._tk.info_screen,w/68.8+w/13.76,h/37.5+180+40+40+40)
+  
+            else:
+                self._tk.disable_btn(self.root,'Input Data',int(2),int(6),self._tk.info_screen,w/68.8+w/13.76,h/37.5+180+40+40+40)
+            
+            if self._tk.mode == 14:
+                
+                self.mode = 14
         
-        elif self.mode == 13 : 
-            self._tk.create_btn(self.root,'Input Data',int(2),int(6),self._tk.info_screen,w/2,h/2)
+        elif self.mode == 14 :
+            self.info_to_write = self._tk.entry_list
+            pos = [self.draw.depot_pos,self.draw.customer_pos]
 
-
-
+            print('pos = ',pos)
+            print('data = ',self.info_to_write )
+            self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,pos)
+            self.mode = 15
 
         self.root.after(self.timer_period,self.update)
         

@@ -1,5 +1,4 @@
-from os import stat
-from turtle import Screen
+
 import pygame as pg
 import yaml
 
@@ -7,7 +6,9 @@ TFont = ("Arial", 12,'bold')
 TFont2 = ("Arial", 8,'bold')
 
 class Drawing():
+
     def __init__(self): 
+       
         self.TFont = TFont
         self.TFont2 = TFont2
         self.endloop= 0
@@ -79,7 +80,8 @@ class Drawing():
 
     
     def create_depot_customer(self,size,type):
-        
+        global amount_customer
+        global amount_depot
         current_type = 0
         
         mouse = pg.mouse.get_pos()
@@ -111,7 +113,7 @@ class Drawing():
                     self.buildtext_num(str(self.num_add_customer),px,py)
                     
                 # print("depot : " + str(self.depot_pos) +str("\n")+ "customer : " + str(self.customer_pos))
-                print(self.num_add_depot,self.num_add_customer)
+                # print(self.num_add_depot,self.num_add_customer)
                 current_type = type
                 self.type_list.append(current_type)
                 self.amount_depot = int(len(self.depot_pos))
@@ -139,7 +141,8 @@ class Drawing():
                         self.amount_customer = int(len(self.customer_pos))
                 else:
                     print('-----------------This is original map-------------------')
-
+        amount_customer =  self.amount_customer
+        amount_depot   = self.amount_depot
                 # print("depot : " + str(self.depot_pos) +str("\n")+ "customer : " + str(self.customer_pos))
             
     def quit(self,isQuit):
@@ -147,3 +150,5 @@ class Drawing():
             return pg.quit()
         else: 
             pass
+    
+ 
