@@ -1,9 +1,10 @@
-from time import time
+
 import rclpy
 from rclpy.node import Node
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
+import tkinter.messagebox
 import sys
 from tkinter import Tk, font , filedialog
 import tk_
@@ -11,10 +12,11 @@ from tk_ import TK_
 import drawing
 from drawing import Drawing
 from write_file import Write_file
-from PIL import ImageTk,Image
+from solver import Solver
 
 import cv2
 import yaml
+
 
 
 class GUI(Node):
@@ -23,16 +25,22 @@ class GUI(Node):
         self._tk = TK_()
         self.draw = Drawing()
         self.write_file = Write_file()
+        self.solve = Solver()
         #Initial Value
         self.mode = 0
         self.clear = 0
         self.select = 0
         self.isYAML = 0
+        self.is_calculate = 0
         self.node_size_val = 0
         self.node_type_val = 0
         self.timer_period = 300
         self.pg_quit = 0
+        self.slide_set = 0
         self.info_to_write = []
+        self.write_file_path = ''
+        self.cost = 0
+        self.sol = ''
         #Initial screen
         screen_width = 1200
         self.w = screen_width
@@ -55,7 +63,7 @@ class GUI(Node):
 
     def select_file_path(self):
         my_path_default = "$HOME/interface_ws/src/full_interface/config"
-        self.root_filename = filedialog.askopenfilename(initialdir=my_path_default,title='Select .yaml file',filetypes=(("yaml file","*.yaml"),("all files","*.*")))
+        self.root_filename = filedialog.askopenfilename(initialdir=my_path_default,title='Select .yaml file',filetypes=(("yaml file","*.yaml"),("pgm file","*.pgm"),("all files","*.*")))
         print("Path to File : ",self.root_filename)
         self.select =1
         if(self.root_filename[-4:]=='yaml'):
@@ -74,7 +82,48 @@ class GUI(Node):
             self.isYAML=0
             # print(self.pg_height,self.pg_width)
         return self.root_filename
+    
+    def select_config(self):
+        my_path_default = "$HOME/interface_ws/src/full_interface"
+        self.root_filename = filedialog.askopenfilename(initialdir=my_path_default,title='Select Config file',filetypes=(("txt file","*.txt"),("all files","*.*")))
+        print("Path to File : ",self.root_filename)
+        if self.root_filename!=0 and self.root_filename!='' and self.root_filename!=None and self.root_filename!=() and self.root_filename!='()':
+            self.select=1
+        
+        else:
+            print('Error Import')
 
+    
+    def calculate(self):
+        
+        
+        self.solve3 = Solver()
+        self.solve3.insert_file_path(self.root_filename)
+        self.cost,self.sol = self.solve3.run()
+        
+        satisfied = messagebox.askquestion('Confirmation','Are you satisfied this result ?\n"Yes" : confirm result\n"No"  : cancel')
+        if satisfied == "yes":
+            self.is_calculate = 1
+        elif satisfied == "no":
+            self.is_calculate = 0
+        
+    
+    def save_solution(self):
+        try:
+            self.write_file.write_sol(self.cost,self.sol)
+            tkinter.messagebox.showinfo('','Solution Saved !')
+            self.mode = 22
+        except:
+            pass
+
+    def save_solution2(self):
+        try:
+            self.write_file.write_sol(self.cost,self.sol)
+            tkinter.messagebox.showinfo('','Solution Saved !')
+            self.mode = 17  
+        except:
+            pass
+    
     def get_node_size_value(self,event):
         if event ==None or event==0 or event=='0':
             event=0
@@ -105,7 +154,54 @@ class GUI(Node):
         self.draw.quit(self.pg_quit)
   
         return self.pg_quit
+    
+    def re_calculate(self):
+ 
+        self.solve2 = Solver()
+        self.solve2.insert_file_path(self.write_file_path)
+        self.draw.back_to_original()
+        best_cost,solution = self.solve2.run()
+        tkinter.messagebox.showinfo('Calculation','Done . . .!')
+        self.draw.visual(solution)
 
+    def home(self):
+        try:
+            self._tk.clear_screen(self.root)
+            self.root_filename = ''
+            self.mode = 0
+            self.clear = 0
+            self.select = 0
+            self.isYAML = 0
+            self.is_calculate = 0
+            self.node_size_val = 0
+            self.node_type_val = 0
+            self.timer_period = 300
+            self.pg_quit = 0
+            self.info_to_write = []
+            self.write_file_path = ''
+            self.cost = 0
+            self.sol = ''
+            self._tk.mode = 0
+            self.draw.amount_customer = 0
+            self.draw.amount_depot = 0
+            self.draw.endloop = 0
+            self.draw.copy_screen_list = []
+            self.draw.index_screen = 0
+            self.draw.depot_pos = []
+            self.draw.customer_pos =[]
+            self.draw.type_list =[]
+            self.draw.num_add_depot = 0
+            self.draw.num_add_customer = 0
+            self.draw.quit(1)
+            self._tk.info_root.destroy()
+           
+            del self.solve
+        except:
+            pass
+    def exit(self):
+        self.root.destroy()
+        sys.exit()
+        
     def update(self):
         w,h = self.w,self.h
         if self.mode==0:
@@ -130,7 +226,7 @@ class GUI(Node):
                         self.draw.overlay_map(self.root_filename)
                         self._tk.disable_btn(self.root,'Import map',int(h/375),int(w/137.6),self.select_file_path,w/68.8 + w/13.76,h/37.5)
                         self.mode = 10
-            
+                     
         elif self.mode==10: # add depot
             self._tk.create_txt_pos('  adjust your node size  ->',w/68.8 + w/13.76,h/37.5+60   ,"light grey",self.bg_color)
             self._tk.create_txt_pos('STEP 2 : ',w/68.8,h/37.5+60 ,"light grey",self.bg_color)
@@ -144,7 +240,11 @@ class GUI(Node):
 
         elif self.mode ==11:
             node_size_slider =Scale(self.root, from_=0, to=30, orient=HORIZONTAL,length=300,tickinterval=5,variable=self.current_node_size,command=self.get_node_size_value)
+            if self.slide_set==0:
+                    node_size_slider.set(5)
+                    self.slide_set=1
             node_size_slider.place(x=w/68.8+350 ,y=h/37.5+60 )
+            
             self.ok_button = tk.Button(self.root, text='OK',height= 1, width=3,command=self.OK_step2,fg='white',bg='DarkOliveGreen4').place(x=w/68.8+350+200,y=h/37.5+130 +50)
             self._tk.create_txt_pos('  select type of node  ->',w/68.8 + w/13.76,h/37.5+130  ,"light grey",self.bg_color)
             self.switcher_depot_customer(w/68.8+350,h/37.5+130)       
@@ -156,6 +256,7 @@ class GUI(Node):
             self.timer_period = 300
             self._tk.create_txt_pos('Total Depot    : ' + str(self.draw.amount_depot),w/68.8+w/13.76,h/37.5+180+40 ,"light grey",self.bg_color)
             self._tk.create_txt_pos('Total Customer : ' + str(self.draw.amount_customer),w/68.8+w/13.76,h/37.5+180+40+40 ,"light grey",self.bg_color)
+            
             self.mode=13
 
       
@@ -166,22 +267,74 @@ class GUI(Node):
             else:
                 self._tk.disable_btn(self.root,'Input Data',int(2),int(6),self._tk.info_screen,w/68.8+w/13.76,h/37.5+180+40+40+40)
             
-            if self._tk.mode == 14:
-                
+            if self._tk.mode == 14:             
                 self.mode = 14
         
         elif self.mode == 14 :
             self.info_to_write = self._tk.entry_list
             pos = [self.draw.depot_pos,self.draw.customer_pos]
-
-            print('pos = ',pos)
-            print('data = ',self.info_to_write )
-            self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,pos)
+            self.write_file_path = self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,pos)
             self.mode = 15
+        
+        elif self.mode == 15 :
+            self.solve.insert_file_path(self.write_file_path)
+            best_cost,solution = self.solve.run()
+            self.cost = best_cost
+            self.sol = solution
+            self.draw.visual(solution)
+            self.mode = 16
+        
+        elif self.mode == 16 :
+            self._tk.create_txt_pos('STEP 4 : ',w/68.8,h/37.5+180+200 ,"light grey",self.bg_color)
+            self._tk.create_btn(self.root,'Save\nresult',int(h/375),int(w/137.6),self.save_solution2,w/68.8+w/13.76,h/37.5+180+200)
+            self._tk.create_btn(self.root,'Re-Calculate',int(h/375),int(w/137.6),self.re_calculate,w/68.8+w/13.76+100,h/37.5+180+200)
 
+        elif self.mode == 17 :
+            self._tk.disable_btn(self.root,'Save\nresult',int(h/375),int(w/137.6),self.save_solution2,w/68.8+w/13.76,h/37.5+180+200)
+            self._tk.disable_btn(self.root,'Re-Calculate',int(h/375),int(w/137.6),self.re_calculate,w/68.8+w/13.76+100,h/37.5+180+200)
+
+        elif self.mode == 2 :
+            if self.clear==0:
+                self._tk.clear_screen(self.root)
+                self.clear=1
+                self._tk.create_txt_pos('STEP 1 : ',w/68.8,h/37.5 +20 ,"light grey",self.bg_color)
+            else:
+                self._tk.create_btn(self.root,'Import Config',int(h/375),int(w/137.6),self.select_config,w/68.8 + w/13.76,h/37.5)
+                if self.select==1 :
+                    if self.root_filename!='' or self.root_filename!=() or self.root_filename!='()':
+                        self._tk.create_txt_pos(self.root_filename,w/68.8+250,h/37.5+20  ,"light grey",self.bg_color)
+                        self._tk.disable_btn(self.root,'Import Config',int(h/375),int(w/137.6),self.select_file_path,w/68.8 + w/13.76,h/37.5)
+                        self._tk.create_txt_pos('STEP 2 : ',w/68.8,h/37.5+60 ,"light grey",self.bg_color)
+                        self.mode = 20
+                else:
+                    self.mode = 2
+        
+        elif self.mode == 20 :           
+            self._tk.create_btn(self.root,'Calculate',int(h/375),int(w/137.6),self.calculate,w/68.8 + w/13.76,h/37.5+60)
+            if self.is_calculate==1:
+                self._tk.disable_btn(self.root,'Calculate',int(h/375),int(w/137.6),self.calculate,w/68.8 + w/13.76,h/37.5+60)
+                self._tk.create_txt_pos('STEP 3 : ',w/68.8,h/37.5+60+60 ,"light grey",self.bg_color)
+                self.mode = 21
+            else:
+                self.mode = 20
+        
+        elif self.mode == 21:
+            # self._tk.create_txt_pos(self.solve.solution,w/68.8+200,h/37.5+60+60 ,"light grey",self.bg_color)
+            self._tk.create_btn(self.root,'Save',int(h/375),int(w/137.6),self.save_solution,w/68.8+ w/13.76,h/37.5+60+60)
+        
+        elif self.mode == 22:
+            self._tk.disable_btn(self.root,'Save',int(h/375),int(w/137.6),self.save_solution,w/68.8+ w/13.76,h/37.5+60+60)
+            self._tk.disable_btn(self.root,'Calculate',int(h/375),int(w/137.6),self.calculate,w/68.8 + w/13.76,h/37.5+60)
+
+        
+
+        if self.mode!=0:
+            tk.Button(self.root, text='Home',height= 1, width=3,command=self.home,fg='white',bg='salmon').place(x=w/68.8,y=h-50)
+            tk.Button(self.root, text='exit',height= 1, width=3,command=self.exit,fg='white',bg='red').place(x=w/1.09,y=h-50)
         self.root.after(self.timer_period,self.update)
         
-    
+
+        
 
 def main(args=None):
     rclpy.init(args=args)

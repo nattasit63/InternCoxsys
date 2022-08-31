@@ -1,4 +1,4 @@
-
+from tkinter import ttk
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox,Tk, font,filedialog
@@ -116,36 +116,46 @@ class TK_():
         self.var_route_dur =tk.IntVar()
 
         #create widget
-        tk.Label(self.info_root,text='maximum vehicle for depot : ',font=TFont2).grid(sticky="W",row=0,column=0)
-        tk.Label(self.info_root,text='maximum load for vehicle   : ',font=TFont2).grid(sticky="W",row=1,column=0)
-        tk.Label(self.info_root,text='route duration(not required | default = 0) : ',font=TFont2).grid(sticky="W",row=2,column=0)
-        tk.Label(self.info_root,text='Customer ID',font=TFont2).grid(sticky=W+E,row=3,column=0,ipady=20)
-        tk.Label(self.info_root,text='Demand',font=TFont2).grid(sticky=W+E,row=3,column=1,ipady=20)
+
+        main_frame = Frame(self.info_root)
+        main_frame.pack(fill=BOTH, expand=1)
+        my_canvas = Canvas(main_frame)
+        my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+        my_scrollbar = ttk.Scrollbar(main_frame, orient=VERTICAL, command=my_canvas.yview)
+        my_scrollbar.pack(side=RIGHT, fill=Y)
+        # Configure The Canvas
+        my_canvas.configure(yscrollcommand=my_scrollbar.set)
+        my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion = my_canvas.bbox("all")))
+        second_frame = Frame(my_canvas)
+        my_canvas.create_window((0,0), window=second_frame, anchor="nw")
         
-        max_vehicle_depot = tk.Entry(self.info_root,width=10)
+
+        tk.Label(second_frame,text='maximum vehicle for depot : ',font=TFont2).grid(sticky="W",row=0,column=0)
+        tk.Label(second_frame,text='maximum load for vehicle   : ',font=TFont2).grid(sticky="W",row=1,column=0)
+        tk.Label(second_frame,text='route duration(not required | default = 0) : ',font=TFont2).grid(sticky="W",row=2,column=0)
+        tk.Label(second_frame,text='Customer ID',font=TFont2).grid(sticky=W+E,row=3,column=0,ipady=20)
+        tk.Label(second_frame,text='Demand',font=TFont2).grid(sticky=W+E,row=3,column=1,ipady=20)
+    
+        max_vehicle_depot = tk.Entry(second_frame,width=10)
         max_vehicle_depot.grid(row=0,column=1)
         self.my_entries.append(max_vehicle_depot)
 
-        max_load_vehicle = tk.Entry(self.info_root,width=10)
+        max_load_vehicle = tk.Entry(second_frame,width=10)
         max_load_vehicle.grid(row=1,column=1)
         self.my_entries.append(max_load_vehicle)
 
-        route_duration = tk.Entry(self.info_root,width=10)
+        route_duration = tk.Entry(second_frame,width=10)
         route_duration.grid(row=2,column=1)
         self.my_entries.append(route_duration)  
 
         for x in range(1,drawing.amount_customer+1):
-            demand = tk.Entry(self.info_root,width=10)
-            tk.Label(self.info_root,text=str(x),font=TFont2).grid(sticky=W+E,row=x+3,column=0)
+            demand = tk.Entry(second_frame,width=10)
+            tk.Label(second_frame,text=str(x),font=TFont2).grid(sticky=W+E,row=x+3,column=0)
             demand.grid(row=x+3,column=1)
             self.my_entries.append(demand)
         
 
-             
-
-
-
-        tk.Button(self.info_root,text='Confirm',fg='white',bg='DarkOliveGreen4',width=4,height=1,command=self.confirm_info).grid(row=drawing.amount_customer+4,column=0,ipady=5)
+        tk.Button(second_frame,text='Confirm',fg='white',bg='DarkOliveGreen4',width=4,height=1,command=self.confirm_info).grid(row=drawing.amount_customer+4,column=0,ipady=5)
         #run
         self.info_root.mainloop()
 

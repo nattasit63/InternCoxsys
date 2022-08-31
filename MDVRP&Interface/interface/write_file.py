@@ -45,5 +45,97 @@ class Write_file():
             file.write(str(i+self.customer_amount)+' '+str(pos[0][i-1][0])+' '+str(pos[0][i-1][1])+' '+'0'+'   '+'0'+' '+'0'+' '+'0'+'\n')
 
         file.close()
+        print('Configuration File has been write !')
+        return file.name
+    
+    def write_sol(self,cost,sol):
+        root = Tk()
+        root.withdraw()
+        file  =  filedialog.asksaveasfile(filetypes=[('text file','*.txt')],defaultextension='.txt',title='Save file as',mode='w')
+        root.destroy()
+        #write first line
+        file.write(str(cost)+'\n')
+        file.write(str(sol))
+        file.close()
+        print('Solution file has been write!')
+    
+    def get_sol_info(self,sol_path):  
+        depot_sep_route =[]
+        sol = open(sol_path,'r')  
+        lines = sol.readlines()
+        total_route_line = len(lines)-1
+        # get cost data
+        optimize_cost = lines[0]
+        # info vehicle
+        total_depot = int(lines[-1][0])
+        for j in range(0,total_depot):
+            depot_sep_route.append([])
+        for i in range(1,total_route_line+1):
+            test = lines[i]
+            this_line = test.split("\t")
+            this_line_route = this_line[-1].split('\n')[0].replace(' ',',').split(",")
+            depot_id = int(this_line[0])-1
+            depot_sep_route[depot_id].append(this_line_route)
+        return depot_sep_route
 
-        return True
+    def get_config_info(self,config_path):
+        split_data=[]
+        customer_pos_info = []
+        depot_pos_info = []
+        con = open(config_path,'r')
+        lines = con.readlines()
+        total_line = len(lines)
+        major_line = lines[0].split()
+        veh_each_depot = major_line[0]
+        total_customer = int(major_line[1])
+        total_depot = int(major_line[2])
+        skip_line = int(total_depot) +1
+        
+        for i in range(skip_line,total_line):  #split data
+            split_data.append(lines[i].split())
+
+        for j in range(len(split_data)-total_depot): #append customer pos
+            customer_pos_info.append([int(split_data[j][1]),int(split_data[j][2])])
+        
+        for k in range(skip_line+total_customer-total_depot-1,len(split_data)):
+            depot_pos_info.append([int(split_data[k][1]),int(split_data[k][2])])
+
+        return depot_pos_info,customer_pos_info
+    
+    def matcher(self,sol_path,config_path):
+        depot_id = 0
+        pos_each_route = []
+        self.raw_route = self.get_sol_info(sol_path)
+        depot_pos_info,customer_pos_info = self.get_config_info(config_path)
+        total_depot= len(self.raw_route)
+
+        for j in range(0,total_depot):
+            pos_each_route.append([])
+        try :
+            if len(depot_pos_info)==len(self.raw_route):
+                print('Matched !')
+                for route in self.raw_route:
+                    depot_id+=1
+                    # print('--------------------------')
+                    for i in range(len(route)):
+                        for j in range(len(route[i])):
+        
+                            if route[i][j]==str(0):
+                                route[i][j] = depot_id
+                # print(raw_route)    
+                depot_id = 0
+                for new_route in self.raw_route:
+                    depot_id+=1
+                    for i in range(len(new_route)):
+                        for j in range(len(new_route[i])):
+                            # print(new_route[i][j])
+                            check_depot = isinstance(new_route[i][j],int)
+                            if check_depot:
+                                pos_each_route[depot_id-1].append([depot_pos_info[depot_id-1]])
+                                new_route[i][j] = depot_pos_info[depot_id-1]
+                            else :
+                                new_route[i][j] = customer_pos_info[int(new_route[i][j])-1]
+                print('ROUTE_POS :')
+                return self.raw_route
+        except:
+            return 'Fail ! your files are not match'
