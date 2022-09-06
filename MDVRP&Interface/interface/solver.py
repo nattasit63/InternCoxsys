@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 BOUND = 2
 POPULATION_SIZE = 200
-GENERATION_SPAN = 350
+GENERATION_SPAN = 250
 NUM_ELITE = 4
 CROSSOVER_PROB = 0.6
 INTRA_D_MUTATION_PROB = 0.1
@@ -86,7 +86,7 @@ class Solver():
             self.y = int(self.info[2])
             self.D = self.depots[i][0]
             self.Q = self.depots[i][1]
-            self.depots[i]= Depot.Depot(self.k,self.x,self.y,self.D,self.Q,self.m)
+            self.depots[i]= Depot.Depot(self.k,self.x,self.y,self.D,self.Q,self.m,self.t)
 
     def initial_depot_clustering(self):
         customers,depots = self.customers,self.depots
@@ -100,6 +100,7 @@ class Solver():
                 if dist[1].get_load()+c.q <= dist[1].Q*m:
                     dist[1].customer_list.append(c)
                     break
+    
 
     def alt_init(self):
         customers,depots = self.customers,self.depots
@@ -112,9 +113,13 @@ class Solver():
         for i in range(POPULATION_SIZE):
             temp_depots = copy.deepcopy(depots)
             for t in temp_depots:
+                
+                # print(t.customer_list)
                 random.shuffle(t.customer_list)
             print("Creating chromosome " + str(i+1))
+            
             population.append(Chromosome.Chromosome(temp_depots))
+            # print(population)
         return population
 
     def plot(self,chromosome):
@@ -192,14 +197,18 @@ class Solver():
         # print('a =       ',best_candidate.total_route_duration())
         self.best_cost = best_candidate.total_route_duration()
         end_time = time.time()
-        print('Total calculate time = ' ,end_time-start_time ,'  seconds')
+        print('calculated time = ' ,end_time-start_time ,'  seconds')
         self.print_sol(best_candidate)
         self.plot(best_candidate)
         
         return self.best_cost,self.solution
 
     def selection(self,population):
+        
         first,second = random.sample(population,2)
+        # print('--------------------------------------------------')
+        # print('POPULATION = ',first,second)
+        # print('--------------------------------------------------')
         r = random.random()
         if r <= 0.8:
             return first if first.fitness() > second.fitness() else second

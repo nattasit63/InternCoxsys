@@ -27,6 +27,7 @@ class Chromosome:
 					sum += 40
 				if d.vehicle_load(vehicle) > d.Q:
 					sum += 40
+	
 		return sum
 
 	def total_route_duration(self):
@@ -34,4 +35,5 @@ class Chromosome:
 		for d in self.depots:
 			for vehicle in range(len(d.vehicles)):
 				sum += d.route_duration(vehicle)
+	
 		return sum

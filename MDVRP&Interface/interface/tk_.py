@@ -29,7 +29,17 @@ class TK_():
         self.var_max_veh_depot = []
         self.var_max_load_veh = []
         # self.var_route_dur = []
-       
+    
+
+    def clear_variable(self):
+        self.mode = 0
+        self.state = 0   #info screen state
+        self.info_root_active = 0
+        self.my_entries = []
+        self.var_max_veh_depot = []
+        self.var_max_load_veh = []
+
+        
     def on_closing(self):
         self.info_root_active=0
         self.info_root.destroy()

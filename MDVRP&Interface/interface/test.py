@@ -1,16 +1,106 @@
 
-from tabnanny import check
+import matplotlib.pyplot as plt
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
 from tkinter import *
 import os
 from solver import Solver
 
-import tkinter as tk
-from tkinter import *
-from tkinter import messagebox,Tk, font,filedialog
-import tkinter
-from tkinter import ttk
+from nwx import NX
+
+import numpy
+import networkx as nx
+
+node_list = [1,2,3,4,5,6,7]
+edge_list = [[1,2],[2,3],[5,6],[6,4],[2,7]]
+pos = [[165,230],[198,172],[282,177],[290,456],[360,418],[420,451],[250,306]]
+
+nw = NX()
+
+print(nw.do_dist_matrix(node_list,edge_list,pos))
+
+
+# Graph = nx.DiGraph()
+
+# def show_nx_graph():
+#     pos = nx.get_node_attributes(Graph,'pos')
+#     # labels = nx.get_edge_attributes(G,'weight')
+#     labels = nx.get_edge_attributes(Graph,'weight')
+#     nx.draw_networkx_edge_labels(Graph,pos,edge_labels=labels)
+#     nx.draw(Graph,pos,with_labels = True,arrows = True)
+#     plt.show()
+
+
+
+# def eul(c1,c2):
+#     f = pos[c1-1]
+#     s = pos[c2-1]
+#     cost = ((f[0] - s[0])**2 + (f[1] - s[1])**2)**0.5
+#     return "%.2f" % round(cost, 2)
+
+
+# def create(nodelist,nodepos):
+#     for i in range(len(nodelist)):
+#         Graph.add_node(nodelist[i],pos=nodepos[i])   
+#     for edge in edge_list:
+#         Graph.add_edge(edge[0],edge[1],weight=(eul(edge[0],edge[1])))
+
+# def astar(start_node,end_node):
+#     astar_path = nx.astar_path(Graph,start_node,end_node, heuristic = None, weight="cost")
+#     return astar_path
+
+
+# def do_dist_matrix(list_of_node,list_of_edge,pos_of_node):
+#     create(list_of_node,pos_of_node)
+#     matrix_size = len(pos_of_node)
+#     distance_matrix = numpy.zeros(shape=(matrix_size,matrix_size))
+#     for i in range(len(list_of_edge)):
+#         for node in range(len(list_of_edge[i])-1):
+#             first,second = list_of_edge[i][node],list_of_edge[i][node+1]
+#             cost = eul(first,second)
+            
+#             distance_matrix[first-1][second-1] = cost
+#     for j in range(1,len(list_of_node)+1):
+#         checker = node_list.copy()
+#         del checker[j-1]
+#         for k in checker:
+#             sum=0.0
+#             try:          
+#                 path = astar(j,k)
+#                 # print('PATH ACCEPT : ',(j,k),'  --> ',path)
+#                 for l in range(len(path)-1):
+#                     sum +=float(eul(path[l],path[l+1]))
+#                     # print(path[l],path[l+1],eul(path[l],path[l+1]),'sum = ',sum)
+#                 distance_matrix[j-1][k-1] = sum
+
+
+#             except:
+#                 # print('ERROR : ',(j,k))
+#                 distance_matrix[j-1][k-1]=99999.99
+    
+
+#     return distance_matrix
+
+
+# create(node_list,pos)
+
+# print(do_dist_matrix(node_list,edge_list,pos))
+# show_nx_graph()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # solve = Solver()
@@ -55,30 +145,30 @@ from tkinter import ttk
 
 
 
-depot_pos = [[109, 285], [210, 316], [261, 246]]
+# depot_pos = [[109, 285], [210, 316], [261, 246]]
 
 
-customer_pos = [[71, 326], [79, 281], [95, 256], [183, 314], [198, 299], [218, 298], [229, 232], [264, 274], [270, 266], [264, 194], [245, 312], [173, 264], [151, 285], [177, 230], [227, 167]]
+# customer_pos = [[71, 326], [79, 281], [95, 256], [183, 314], [198, 299], [218, 298], [229, 232], [264, 274], [270, 266], [264, 194], [245, 312], [173, 264], [151, 285], [177, 230], [227, 167]]
 
 
-true_route = [[1, '1', '2', '3', '13', 1], [2, '11', '6', '5', '12', '4', 2], [3, '10', '15', '14', '7', '8', '9', 3]]
+# true_route = [[1, '1', '2', '3', '13', 1], [2, '11', '6', '5', '12', '4', 2], [3, '10', '15', '14', '7', '8', '9', 3]]
 
-for i in range(len(true_route)):
-    for j in range(len(true_route[i])):
-        check_depot = isinstance(true_route[i][j],int)
-        if check_depot:
-            true_route[i][j] = depot_pos[int(true_route[i][j])-1]
-        else:
-            true_route[i][j] = customer_pos[int(true_route[i][j])-1]
+# for i in range(len(true_route)):
+#     for j in range(len(true_route[i])):
+#         check_depot = isinstance(true_route[i][j],int)
+#         if check_depot:
+#             true_route[i][j] = depot_pos[int(true_route[i][j])-1]
+#         else:
+#             true_route[i][j] = customer_pos[int(true_route[i][j])-1]
 
 
-print((true_route))
-pos=[]
-for i in range(len(true_route)):
-    for j in range(len(true_route[i])-1):
-        current = true_route[i][j]
-        next = true_route[i][j+1]
-        print('Current = ',current,'  , Next  = ',next)
+# print((true_route))
+# pos=[]
+# for i in range(len(true_route)):
+#     for j in range(len(true_route[i])-1):
+#         current = true_route[i][j]
+#         next = true_route[i][j+1]
+#         print('Current = ',current,'  , Next  = ',next)
        
 
 
