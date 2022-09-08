@@ -13,6 +13,7 @@ import drawing
 from drawing import Drawing
 from write_file import Write_file
 from solver import Solver
+from nwx import NX
 
 import cv2
 import yaml
@@ -26,6 +27,7 @@ class GUI(Node):
         self.draw = Drawing()
         self.write_file = Write_file()
         self.solve = Solver()
+        self.nw = NX()
         #Initial Value
         self.mode = 0
         self.clear = 0
@@ -139,8 +141,8 @@ class GUI(Node):
 
     def switcher_depot_customer(self,posx,posy):
         Radiobutton(self.root, text = 'Depot', variable = self.switch_var,value = 0,bg=self.bg_color,fg="light grey",activeforeground='black',activebackground='lightgrey',command=self.get_switch).place(x=posx,y=posy)
-        Radiobutton(self.root, text = 'Customer', variable = self.switch_var,value = 1,bg=self.bg_color,fg="light grey",activeforeground='black',activebackground='lightgrey',command=self.get_switch).place(x=posx,y=posy+50)  
-        # Radiobutton(self.root, text = 'Add edge', variable = self.switch_var,value = 2,bg=self.bg_color,fg="light grey",activeforeground='black',activebackground='lightgrey',command=self.get_switch).place(x=posx,y=posy+100) 
+        Radiobutton(self.root, text = 'Customer', variable = self.switch_var,value = 1,bg=self.bg_color,fg="light grey",activeforeground='black',activebackground='lightgrey',command=self.get_switch).place(x=posx,y=posy+25)  
+        Radiobutton(self.root, text = 'Connect point', variable = self.switch_var,value = 2,bg=self.bg_color,fg="light grey",activeforeground='black',activebackground='lightgrey',command=self.get_switch).place(x=posx,y=posy+50) 
 
     def get_switch(self):
         self.node_type_val = self.switch_var.get()
@@ -157,6 +159,11 @@ class GUI(Node):
     def OK_step2(self):
         self.pg_quit = 0
         # self.pg_quit = 1
+        # self.draw.send_to_nwx()
+        self.draw.send_to_nwx()
+        # self.nw.create(nodelist=self.draw.all_via_point,nodepos=self.draw.all_via_point_pos,edge_list=self.draw.edge_list)
+        # self.nw.do_real_path()
+
         self.mode=12
         self.draw.quit(self.pg_quit)
   
@@ -293,6 +300,8 @@ class GUI(Node):
             self.info_to_write = self._tk.entry_list
             pos = [self.draw.depot_pos,self.draw.customer_pos]
             self.write_file_path = self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,pos)
+            # pos = [self.draw.depot_pos,self.draw.all_via_point_pos]
+            # self.write_file_path = self.write_file.write2(tk_.export_data,drawing.amount_all_vp,drawing.customer_index,drawing.amount_depot,pos,drawing.connect_index)
             self.mode = 15
         
         elif self.mode == 15 :
@@ -300,7 +309,11 @@ class GUI(Node):
             best_cost,solution = self.solve.run()
             self.cost = best_cost
             self.sol = solution
+            self.nw.do_real_path(solution)
+
             self.draw.visual(solution)
+
+          
             self.mode = 16
         
         elif self.mode == 16 :

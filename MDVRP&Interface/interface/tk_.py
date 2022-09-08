@@ -61,11 +61,17 @@ class TK_():
         tk.Button(screen, text=text,height=h, width=w,command=command,fg='white',bg='azure4',state=DISABLED).place(x=posx,y=posy)
 
     def create_file_btn(self):
+        global mode
+        
         self.mode=1
+        mode = self.mode
         print('-----------------------------MODE : CREATE FILE-----------------------------')
     
     def import_file_btn(self):
+        global mode
+        
         self.mode=2
+        mode = self.mode
         print('-----------------------------MODE : IMPORT FILE-----------------------------')
     
     def confirm_info(self):
@@ -95,6 +101,7 @@ class TK_():
                 #  
                 if entry.get().isdigit()==False:
                     print('Format Error (customer demand)')
+                    entry = 0
                     state = 0
                 else:
                     self.entry_list.append(int(entry.get()))

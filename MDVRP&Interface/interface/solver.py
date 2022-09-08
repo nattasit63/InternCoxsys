@@ -89,6 +89,8 @@ class Solver():
             self.depots[i]= Depot.Depot(self.k,self.x,self.y,self.D,self.Q,self.m,self.t)
 
     def initial_depot_clustering(self):
+        global initial_clustering_state
+        initial_clustering_state=1
         customers,depots = self.customers,self.depots
         Q = self.Q
         q = self.q
@@ -116,7 +118,8 @@ class Solver():
                 
                 # print(t.customer_list)
                 random.shuffle(t.customer_list)
-            print("Creating chromosome " + str(i+1))
+            if i//5==1:
+                print("Creating chromosome " + str(i+1))
             
             population.append(Chromosome.Chromosome(temp_depots))
             # print(population)
@@ -163,7 +166,8 @@ class Solver():
             fitness = copy.deepcopy([(chrom.fitness(),chrom) for chrom in population])
             fitness.sort(key=itemgetter(0))
             avg_fitness = sum(f[0] for f in fitness)/len(population)
-            print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
+            if generation%10==1:
+                print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
             new_pop = []
             while len(new_pop) < len(population):
                 p1 = self.selection(population)
@@ -218,9 +222,17 @@ class Solver():
     def crossover(self,p1,p2): 
         depots = self.depots
         depot_num = random.randint(0,self.t-1)
-        r1 = random.randint(0,len(p1.depots[depot_num].vehicles)-1)
+        try:
+            r1 = random.randint(0,len(p1.depots[depot_num].vehicles)-1)
+        except:
+            r1= random.randint(0,len(Depot.rand_vehicle)+2)
+        
         route_1=copy.deepcopy(p1.depots[depot_num].vehicles[r1])
-        r2 = random.randint(0,len(p2.depots[depot_num].vehicles)-1)
+        try:
+            r2 = random.randint(0,len(p2.depots[depot_num].vehicles)-1)
+        except:
+            r2= random.randint(0,len(Depot.rand_vehicle)+2)
+        # print('R2  =' ,r2)
         route_2=copy.deepcopy(p2.depots[depot_num].vehicles[r2])
         p1_add = []
         p2_add = []
@@ -306,8 +318,16 @@ class Solver():
         depots = self.depots
         customer_list = self.customer_list
         depot_num = random.randint(0,self.t-1)
-        left = random.randint(0,len(child.depots[depot_num].customer_list)-2)
-        right = random.randint(left+2,len(child.depots[depot_num].customer_list))
+        try:
+            left = random.randint(0,len(child.depots[depot_num].customer_list)-2)
+            # print('LEFT  = ',left)
+        except:
+            left = random.randint(0,len(Depot.rand_vehicle)+2)
+        try:
+            right = random.randint(left+2,len(child.depots[depot_num].customer_list)+1)
+        except:
+            right = random.randint(0,len(Depot.rand_vehicle)+2)
+        # print('RIGHT = ',right)
         sublist = child.depots[depot_num].customer_list[left:right]
         sublist.reverse()
         child.depots[depot_num].customer_list[left:right] = sublist

@@ -1,4 +1,6 @@
 
+
+from turtle import pos
 import matplotlib.pyplot as plt
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
@@ -8,16 +10,107 @@ from solver import Solver
 
 from nwx import NX
 
-import numpy
+import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 
-node_list = [1,2,3,4,5,6,7]
-edge_list = [[1,2],[2,3],[5,6],[6,4],[2,7]]
-pos = [[165,230],[198,172],[282,177],[290,456],[360,418],[420,451],[250,306]]
 
-nw = NX()
+# node_list = [1,2,3,4,5,6,7]
+# edge_list = [[1,2],[2,3],[5,6],[6,4],[2,7]]
+# pos = [[165,230],[198,172],[282,177],[290,456],[360,418],[420,451],[250,306]]
 
-print(nw.do_dist_matrix(node_list,edge_list,pos))
+
+
+
+# nw = NX()
+G = nx.Graph()
+
+
+amount_depot = 2
+node_list = [1, 2, 3, 4, 5, 6, 7, 8]
+edge_list = [[1, 3], [3, 1], [3, 4], [4, 3], [4, 5], [5, 4], [1, 5], [5, 1], [5, 6], [6, 5], [6, 8], [8, 6], [8, 7], [7, 8], [4, 8], [8, 4], [2, 6], [6, 2], [2, 7], [7, 2], [2, 8], [8, 2], [4, 1], [1, 4]]
+node_pos = [[154, 490], [402, 471], [113, 440], [170, 415], [215, 481], [347, 483], [425, 430], [375, 434]]
+route = [[1, '3', '2', '1', 1], [2, '5', '6', '4', 2]]
+route_lookup_node = []
+
+
+def eul(node1,node2):
+    pos1=node_pos[node1-1]
+    pos2=node_pos[node2-1]
+    cost = ((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)**0.5
+    return "%.2f" % round(cost, 2)
+
+##
+for i in node_list:
+    G.add_node(i,pos=node_pos[i-1])
+for i in edge_list:
+    G.add_edge(i[0],i[1],weight=(eul(i[0],i[1])))
+pos = nx.get_node_attributes(G,'pos')
+# labels = nx.get_edge_attributes(G,'weight')
+labels = nx.get_edge_attributes(G,'weight')
+nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+nx.draw(G,pos,with_labels = True,arrows = True)
+plt.show()
+
+
+#important
+for i in route: #Do point in route to look up node list
+    for j in range(len(i)):
+        check_depot = isinstance(i[j],int)
+        if not check_depot:
+            i[j] = int(i[j])
+            i[j] = i[j] + amount_depot
+
+# print(route)
+
+
+
+
+
+
+
+
+
+
+
+
+# depot_index   =  [1, 2]
+# customer_index =  [3, 4, 5, 6, 7, 8, 9]
+# connect_index  =  [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+# index_customer =   [3, 4, 5, 7, 8, 9, 10, 11, 12, 13]
+# index_connect  =   [1, 2, 6]
+
+
+# matrix = np.array(nw.do_dist_matrix(list_of_node,list_of_edge,pos_of_node,index_customer,index_connect))
+
+# def del_connect_index_in_matrix(matrix,index_connect):
+#     n=0
+#     for i in index_connect:
+#         matrix = np.delete(matrix,(i-1-n),axis=1)
+#         matrix = np.delete(matrix,(i-1-n),axis=0)
+#         n+=1
+#         print('\n',matrix.shape,'\n')
+#         print(matrix)
+#         print('-----------------------------------------------------------------------','\n')
+# # print(nw.do_dist_matrix(list_of_node,list_of_edge,pos_of_node,index_customer,index_connect))
+
+# All_node_list =  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+# List_of_edge  =  [[2, 26], [26, 2], [26, 27], [27, 26], [25, 27], [27, 25], [9, 25], [25, 9], [28, 25], [25, 28], [28, 24], [24, 28], [6, 24], [24, 6], [27, 9], [9, 27], [1, 11], [11, 1], [11, 10], [10, 11], [10, 1], [1, 10], [1, 12], [12, 1], [12, 11], [11, 12], [15, 1], [1, 15], [15, 10], [10, 15], [16, 15], [15, 16], [15, 18], [18, 15], [18, 3], [3, 18], [3, 20], [20, 3], [20, 19], [19, 20], [19, 4], [4, 19], [4, 17], [17, 4], [17, 18], [18, 17], [18, 19], [19, 18], [17, 20], [20, 17], [19, 2], [2, 19], [26, 19], [19, 26], [19, 27], [27, 19], [17, 16], [16, 17], [10, 5], [5, 10], [5, 11], [11, 5], [15, 5], [5, 15], [5, 12], [12, 5], [12, 7], [7, 12], [7, 13], [13, 7], [13, 12], [12, 13], [13, 8], [8, 13], [8, 14], [14, 8], [14, 13], [13, 14], [13, 21], [21, 13], [21, 14], [14, 21], [14, 23], [23, 14], [23, 21], [21, 23], [21, 22], [22, 21], [22, 16], [16, 22], [16, 21], [21, 16], [22, 24], [24, 22], [22, 28], [28, 22]]
+# All_node_pos  =  [[202, 213], [369, 515], [344, 351], [506, 393], [474, 173], [730, 330], [415, 52], [615, 56], [752, 441], [383, 217], [379, 162], [372, 86], [492, 82], [614, 87], [386, 283], [495, 285], [502, 348], [411, 351], [399, 415], [337, 415], [620, 216], [577, 286], [680, 222], [679, 323], [674, 427], [436, 504], [557, 505], [621, 367]]
+# depot_index   =  [1, 2]
+# customer_index =  [3, 4, 5, 6, 7, 8, 9]
+# connect_index  =  [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+
+
+
+# matrix = nw.do_dist_matrix(All_node_list,List_of_edge,All_node_pos,customer_index,connect_index)
+
+# print(len(matrix))
+
+
+
+
+
 
 
 # Graph = nx.DiGraph()

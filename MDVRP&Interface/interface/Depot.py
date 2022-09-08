@@ -1,8 +1,13 @@
-
-class Depot:
+import nwx
+import drawing 
+import tk_
+import solver
+class Depot():
 	
 	def __init__(self,i,x,y,D,Q,m,t):
 		self.prev = []
+		# self.nw = NX()
+		# self.draw = Drawing()
 		self.i = i
 		self.x = x
 		self.y = y
@@ -16,6 +21,7 @@ class Depot:
 		self.true_customer_list = []
 		self.total_depot = t
 		self.vehicles = [[]]
+		self.distance_matrix = []
 	
 	def clearr(self):
 		self.i = 0
@@ -32,7 +38,7 @@ class Depot:
 
 	# Route scheduling
 	def route_schedule(self):
-		
+		global rand_vehicle
 		vehicle = 0				
 		for c in self.customer_list:
 				self.vehicles[vehicle].append(c)
@@ -40,7 +46,7 @@ class Depot:
 					self.vehicles[vehicle].remove(c)
 					vehicle += 1
 					self.vehicles.append([c])
-	
+		rand_vehicle = self.vehicles
 		
 
 	def update_customer_list(self):
@@ -77,30 +83,28 @@ class Depot:
 	def get_load(self):
 		return sum(c.q for c in self.customer_list)
 
+
 	# Distance 
 	def distance(self,c1,c2):
-		# print(c1 ,c2)
-		shift = self.total_depot-1
-		distance_matrix = [
-			[0, 5, 25, 7, 68, 34, 87, 91, 3, 10], 
-			[57, 0, 30, 30, 30, 50, 22, 65, 6, 25], 
-			[97, 53, 0, 50, 26, 69, 9999, 9999, 9999, 9999], #1
-			[36, 64, 16, 0, 71, 73, 9999, 9999, 9999, 9999],   #2
-			[84, 73, 97, 77, 0, 75, 9999, 9999, 9999, 9999], 	#3
-			[44, 93, 70, 7, 50, 0,9999, 9999, 9999, 9999], 	#4
-			[72, 15,9999, 9999, 9999, 9999, 0, 8, 74, 41], 	#5
-			[56, 62, 9999, 9999, 9999, 9999, 24, 0, 20, 97], 	#6
-			[52, 72,9999, 9999, 9999, 9999 ,5, 26, 0, 70], 		#7
-			[42, 97, 9999, 9999, 9999, 9999, 86, 59, 71, 0]]	#8
-		
+
+
+		# if solver.initial_clustering_state==1:
+		# 	solver.initial_clustering_state=0
+		return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
+
+
+		# if solver.initial_clustering_state==0 and tk_.mode == 1:
+			# return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
 		pre = int(str(c1))
 		after =  int(str(c2))
-		cost = distance_matrix[pre+shift][after+shift]
-		# print((pre,after),'   =  ',cost)
+		shift = int(drawing.amount_depot)-1
 		
-		
+		distance_matrix = nwx.adj_dist_matrix
 
-		# return cost
-		# print(((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5)
-		return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
-		
+		cost = distance_matrix[pre+shift][after+shift]
+		# cost = distance_matrix[pre-1][after-1]
+
+		return cost
+			
+		# elif  tk_.mode == 2:
+		# 	return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
