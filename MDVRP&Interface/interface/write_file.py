@@ -77,7 +77,7 @@ class Write_file():
             file.write(str(self.route_duration)+' '+str(self.max_load_vehicle)+'\n')
 
         #write customer (third part)
-        print('customer id : ',index_customer_in_all_vp )
+        # print('customer id : ',index_customer_in_all_vp )
         for i in range(1,self.all_point_amount+1):
             for j in index_customer_in_all_vp:
                 if int(i)==int(j):

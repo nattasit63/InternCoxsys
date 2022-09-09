@@ -2,7 +2,7 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import drawing
 
 
 class NX():
@@ -16,7 +16,7 @@ class NX():
         self.connect_point_index = []
         self.astar_path = ''  
         self.dist_matrix = []
-        self.Graph = nx.Graph()
+        self.Graph = nx.Graph()         
     
     
     def eul(self,c1,c2):
@@ -27,7 +27,7 @@ class NX():
     
     def create(self,nodelist,nodepos,edge_list):
         for i in range(len(nodelist)):
-            self.Graph.add_node(nodelist[i],pos=nodepos[i])   
+            self.Graph.add_node(int(nodelist[i]),pos=nodepos[i])   
         for edge in edge_list:
             self.Graph.add_edge(edge[0],edge[1],weight=(self.eul(edge[0],edge[1])))
 
@@ -49,16 +49,16 @@ class NX():
             matrix = np.delete(matrix,(i-1-n),axis=1)
             matrix = np.delete(matrix,(i-1-n),axis=0)
             n+=1
-            # print('\n',matrix.shape,'\n')
-            # print(matrix)
-            # print('-----------------------------------------------------------------------','\n')
         return matrix
+    
 
     def do_dist_matrix(self,list_of_node,list_of_edge,pos_of_node,customer_index_list,connect_point_list):
         global adj_dist_matrix
         global node_pos
         global node_list
         global edge_list
+
+        print('Node with pos and Edge has been send to nx Graph')
         # print('-------------List edge ----------------  =',list_of_edge)
         self.node_list = list_of_node
         self.edge_list = list_of_edge
@@ -95,7 +95,7 @@ class NX():
                 except:
                     # print('ERROR : ',(j,k))
                     distance_matrix[j-1][k-1]=9999.99
-        print('Major matrix is calculated')
+       # print('Major matrix is calculated')
         self.dist_matrix = distance_matrix
 
         adj_dist_matrix    =  self.dist_matrix    
@@ -107,20 +107,115 @@ class NX():
 
         # self.minor_matrix = distance_matrix.copy()
         # self.minor_matrix = self.del_connect_index_in_matrix(self.dist_matrix,connect_point_list)
-        # print('Minor matrix is calculated')
-        # print(self.minor_matrix)
+
    
         return distance_matrix
+    def del_duplicate_route(self,route):
+        pure = []
+        temp = 0
+        for z in range(len(route)):
+            if route[z]!=temp:
+                pure.append(route[z])
+            temp = route[z]
+        return pure
+
+    def mapping_with_ui(self,solution):
+        self.create(node_list,node_pos,edge_list)
+        print('MAPPER')
+        print('list : ',node_list)
+        print('pos : ',node_pos)
+        print('edge : ',edge_list)
+
+        
+        print('Amount Depot : ',drawing.amount_depot)
+        list_of_node = list(node_list)
+        real_route = []
+        real_route_astar = []
+        true_route = []
+        sol = solution.split('\n')
+        sol = sol[:-1]
+
+        for i in range(len(sol)):
+            sol[i] = sol[i].split('\t')
+            del sol[i][1]
+            del sol[i][1]
+            del sol[i][1]
+            sol[i][0] = int(sol[i][0])
+            sol[i][1] =sol[i][1].split()
+
+        for j in range(len(sol)):
+            depot = sol[j][0]
+            for point in range(len(sol[j][1])):
+                if sol[j][1][point] == '0':
+                    sol[j][1][point]=depot
+            true_route.append(sol[j][1])
+
+        #[[1, '1', '2', '3', '4', 1], [2, '7', '6', '5', 2]]
+
+        print('sol route :',true_route)
+        for i in true_route: #Do point in route to look up node list
+            for j in range(len(i)):
+                check_depot = isinstance(i[j],int)
+                if not check_depot:
+                    i[j] = int(i[j])
+                    i[j] = i[j] + drawing.amount_depot
+
+        print('look up :',true_route)
+
+        for num in range(drawing.amount_depot):
+            real_route.append([])
+            real_route_astar.append([])
+
+        # print(self.Graph.nodes)
+        for i in true_route:
+            for j in range(len(i)-1):
+                depot = i[0]
+                # print(i[j],i[j+1])
+                real_route[depot-1].append(self.astar(int(i[j]),int(i[j+1])))
+                
+        
+        print('real route :',real_route)
+
+        for i in range(len(real_route)):
+            x = real_route[i]
+            for el in sum(x,[]):
+                real_route_astar[i].append(el)
+
+        print('combine route :',real_route_astar)
+        for i in range(len(real_route_astar)):
+            depot = real_route_astar[i][0]
+            real_route_astar[i] = self.del_duplicate_route(real_route_astar[i])
+
+        print('del dep route :',real_route_astar)
+
+        for i in real_route_astar:
+            for j in range(len(i)):
+                if i[j]==i[0] or i[j]==i[-1]:
+                    pass
+                else:
+                    i[j] = str(i[j]-drawing.amount_depot)
+        
+        print('real return route :',real_route_astar)
+
+        return real_route_astar
+        #plt.show()
+
+
+
+    
     
     def do_real_path(self,solution):
+        global astar_path
+ 
         self.create(node_list,node_pos,edge_list)
 
-
-        self.real_route = []
         self.true_route = []
+        real_route = []
+        real_route_astar = []
         sol = solution.split('\n')
 
         sol = sol[:-1]
+        print('SOL :',sol)
 
         for i in range(len(sol)):
             sol[i] = sol[i].split('\t')
@@ -137,10 +232,47 @@ class NX():
                     sol[j][1][point]=depot
             self.true_route.append(sol[j][1])
 
-        list_node  =  list(self.Graph.nodes)  
+
       
-    
-        #[[1, '3', '2', '1', 1], [2, '8', '7', '9', 2], [3, '6', '5', '4', 3]]
-        print(node_pos)
-        print(list_node,type(list_node))
-        print(self.true_route)
+        for i in self.true_route: #Do point in route to look up node list
+            for j in range(len(i)):
+                check_depot = isinstance(i[j],int)
+                if not check_depot:
+                    i[j] = int(i[j])
+                    i[j] = i[j] + drawing.amount_depot
+
+
+        
+        for num in range(drawing.amount_depot):
+            real_route.append([])
+            real_route_astar.append([])
+
+        for i in self.true_route:
+            for j in range(len(i)-1):
+                depot = i[0]
+                real_route[depot-1].append(self.astar(i[j],i[j+1]))
+
+        for i in range(len(real_route)):
+            x = real_route[i]
+            for el in sum(x,[]):
+                real_route_astar[i].append(el)
+
+
+
+        for i in range(len(real_route_astar)):
+            depot = real_route_astar[i][0]
+            real_route_astar[i] = self.del_duplicate_route(real_route_astar[i])
+            # real_route_astar[i].append(depot)
+
+        for i in real_route_astar:
+            for j in range(len(i)):
+                if i[j]==i[0] or i[j]==i[-1]:
+                    pass
+                else:
+                    i[j] = str(i[j]- drawing.amount_depot)
+      
+        print('original route :',self.true_route)
+        print('astar route    :',real_route_astar)
+        astar_path = real_route_astar
+        return real_route_astar
+

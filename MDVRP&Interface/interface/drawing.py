@@ -371,7 +371,7 @@ class Drawing():
                                     #draw and add edge to list
                                     self.line(self.first_edge_x,self.first_edge_y,second_edge_x,second_edge_y)
                                     self.edge_list.append([self.first_edge_pair,self.second_edge_pair])
-                                    self.edge_list.append([self.second_edge_pair,self.first_edge_pair])
+                                    # self.edge_list.append([self.second_edge_pair,self.first_edge_pair])
                                     self.screen_edge = self.screen.copy()
                                     self.screen_edge_list.append(self.screen_edge)
                                     self.click_edge_state=0
@@ -423,7 +423,7 @@ class Drawing():
                                     self.line(self.first_edge_x,self.first_edge_y,second_edge_x,second_edge_y)
                                     self.edge_list.append([self.first_edge_pair,self.second_edge_pair])
                                     self.screen_edge = self.screen.copy()
-                                    self.screen_edge_list.append(self.screen_edge)
+                                    self.screen_edge_list.append(self.scr en_edge)
                                     self.click_edge_state=0
                                     self.index_edge_screen +=1
                                     print(self.edge_list)
@@ -452,6 +452,7 @@ class Drawing():
                                                     ,pos_of_node=self.all_via_point_pos
                                                     ,customer_index_list=self.index_customer_in_all_vp
                                                     ,connect_point_list=self.index_connect_point_in_all_vp)
+        #self.nw.mapping_with_ui()
         # print(self.major_matrix)
         return self.major_matrix
 
@@ -478,6 +479,8 @@ class Drawing():
                 if sol[j][1][point] == '0':
                     sol[j][1][point]=depot
             self.true_route.append(sol[j][1])
+
+        
         for i in range(len(self.true_route)):
             for j in range(len(self.true_route[i])):
                 check_depot = isinstance(self.true_route[i][j],int)
@@ -493,6 +496,9 @@ class Drawing():
                 next = self.true_route[i][j+1]
                 self.connect_point(current,next,colors)
         return self.true_route
+
+
+
     # def visual(self,solution):  #for adj_matrix
         
     #     self.true_route = []
@@ -509,7 +515,7 @@ class Drawing():
     #         del sol[i][1]
     #         sol[i][0] = int(sol[i][0])
     #         sol[i][1] =sol[i][1].split()
-    #     print('sol from loop [i] :',sol)
+    #     # print('sol from loop [i] :',sol)
 
     #     for j in range(len(sol)):
     #         depot = sol[j][0]
@@ -521,7 +527,6 @@ class Drawing():
 
     #     print('true_route from loop [j] :',self.true_route)
         
-        
 
 
     #     for i in range(len(self.true_route)):
@@ -532,10 +537,7 @@ class Drawing():
     #             else:
     #                 self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1]
 
-
         
-      
-
     #     for i in range(len(self.true_route)):
     #         colors = self.color[i]
     #         for j in range(len(self.true_route[i])-1):
@@ -545,6 +547,24 @@ class Drawing():
     #             # print(color_pos = (current,next))
         
     #     return self.true_route
+
+    def visual_astar(self,solution):
+        self.true_route =solution
+        for i in range(len(self.true_route)):
+            for j in range(len(self.true_route[i])):
+                check_depot = isinstance(self.true_route[i][j],int)
+                if check_depot:
+                    self.true_route[i][j] = self.depot_pos[int(self.true_route[i][j])-1]
+                else:
+                    self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1+amount_depot] 
+
+        for i in range(len(self.true_route)):
+            colors = self.color[i]
+            for j in range(len(self.true_route[i])-1):
+                current = self.true_route[i][j]
+                next = self.true_route[i][j+1]
+                self.connect_point(current,next,colors)
+        
       
     def quit(self,isQuit):
         if isQuit == 1 :

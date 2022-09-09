@@ -14,6 +14,7 @@ from drawing import Drawing
 from write_file import Write_file
 from solver import Solver
 from nwx import NX
+import nwx
 
 import cv2
 import yaml
@@ -159,9 +160,9 @@ class GUI(Node):
     def OK_step2(self):
         self.pg_quit = 0
         # self.pg_quit = 1
-        # self.draw.send_to_nwx()
         self.draw.send_to_nwx()
-        # self.nw.create(nodelist=self.draw.all_via_point,nodepos=self.draw.all_via_point_pos,edge_list=self.draw.edge_list)
+        # self.draw.send_to_nwx()
+
         # self.nw.do_real_path()
 
         self.mode=12
@@ -309,10 +310,13 @@ class GUI(Node):
             best_cost,solution = self.solve.run()
             self.cost = best_cost
             self.sol = solution
-            self.nw.do_real_path(solution)
 
-            self.draw.visual(solution)
-
+            # self.nw.do_real_path(solution)
+            # astar_route =  nwx.astar_path 
+            print(self.nw.mapping_with_ui(solution))
+            
+            # self.draw.visual(solution)
+            self.draw.visual_astar(self.nw.mapping_with_ui(solution))
           
             self.mode = 16
         

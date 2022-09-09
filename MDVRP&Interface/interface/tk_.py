@@ -100,11 +100,14 @@ class TK_():
             for entry  in self.my_entries:
                 #  
                 if entry.get().isdigit()==False:
+                    self.entry_list.append(int(0))
                     print('Format Error (customer demand)')
-                    entry = 0
-                    state = 0
+            
                 else:
-                    self.entry_list.append(int(entry.get()))
+                    if entry.get()==None or entry.get()=='':                  
+                        self.entry_list.append(int(0))
+                    else:
+                        self.entry_list.append(int(entry.get()))
             # print('tk = ',self.entry_list)
             export_data = self.entry_list
             self.mode = 14

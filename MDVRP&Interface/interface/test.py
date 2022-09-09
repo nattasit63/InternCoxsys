@@ -1,14 +1,10 @@
 
-
-from turtle import pos
 import matplotlib.pyplot as plt
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfile
 from tkinter import *
-import os
-from solver import Solver
 
-from nwx import NX
+
 
 import numpy as np
 import networkx as nx
@@ -27,11 +23,11 @@ G = nx.Graph()
 
 
 amount_depot = 2
-node_list = [1, 2, 3, 4, 5, 6, 7, 8]
-edge_list = [[1, 3], [3, 1], [3, 4], [4, 3], [4, 5], [5, 4], [1, 5], [5, 1], [5, 6], [6, 5], [6, 8], [8, 6], [8, 7], [7, 8], [4, 8], [8, 4], [2, 6], [6, 2], [2, 7], [7, 2], [2, 8], [8, 2], [4, 1], [1, 4]]
-node_pos = [[154, 490], [402, 471], [113, 440], [170, 415], [215, 481], [347, 483], [425, 430], [375, 434]]
-route = [[1, '3', '2', '1', 1], [2, '5', '6', '4', 2]]
-route_lookup_node = []
+
+node_pos = [[217, 246], [315, 490], [79, 163], [178, 136], [277, 77], [459, 98], [433, 500], [159, 509], [170, 204], [296, 133], [382, 84], [188, 342], [233, 495], [377, 242], [422, 374]]
+edge_list = [[1, 9], [9, 1], [9, 3], [3, 9], [3, 4], [4, 3], [4, 10], [10, 4], [10, 5], [5, 10], [5, 11], [11, 5], [11, 6], [6, 11], [6, 14], [14, 6], [14, 15], [15, 14], [15, 7], [7, 15], [7, 2], [2, 7], [2, 13], [13, 2], [13, 8], [8, 13], [8, 12], [12, 8], [12, 1], [1, 12]]
+node_list =[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] 
+route =[[1, '1', '7', '10', '5', '11', '6', 1], [2, '3', '4', '13', '12', '9', '8', '2', 2]]
 
 
 def eul(node1,node2):
@@ -40,17 +36,31 @@ def eul(node1,node2):
     cost = ((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)**0.5
     return "%.2f" % round(cost, 2)
 
+def astar(start_node,end_node):
+        astar_path = nx.astar_path(G,start_node,end_node, heuristic = None, weight="cost")
+        return astar_path
+
+def del_duplicate_route(route):
+    pure = []
+    temp = 0
+    for z in range(len(route)):
+        if route[z]!=temp:
+            pure.append(route[z])
+        temp = route[z]
+    return pure
+        # return list(dict.fromkeys(route))
+
+
 ##
 for i in node_list:
     G.add_node(i,pos=node_pos[i-1])
 for i in edge_list:
     G.add_edge(i[0],i[1],weight=(eul(i[0],i[1])))
 pos = nx.get_node_attributes(G,'pos')
-# labels = nx.get_edge_attributes(G,'weight')
 labels = nx.get_edge_attributes(G,'weight')
 nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
 nx.draw(G,pos,with_labels = True,arrows = True)
-plt.show()
+# plt.show()
 
 
 #important
@@ -61,12 +71,46 @@ for i in route: #Do point in route to look up node list
             i[j] = int(i[j])
             i[j] = i[j] + amount_depot
 
-# print(route)
+
+real_route = []
+real_route_astar = []
+for num in range(amount_depot):
+    real_route.append([])
+    real_route_astar.append([])
+
+for i in route:
+    for j in range(len(i)-1):
+        depot = i[0]
+        real_route[depot-1].append(astar(i[j],i[j+1]))
+
+for i in range(len(real_route)):
+    x = real_route[i]
+    for el in sum(x,[]):
+        real_route_astar[i].append(el)
+
+print(real_route_astar)
+
+for i in range(len(real_route_astar)):
+    depot = real_route_astar[i][0]
+    real_route_astar[i] = del_duplicate_route(real_route_astar[i])
+    # real_route_astar[i].append(depot)
+print(real_route_astar)
+
+for i in real_route_astar:
+    for j in range(len(i)):
+        if i[j]==i[0] or i[j]==i[-1]:
+            pass
+        else:
+            i[j] = str(i[j]-amount_depot)
+            # pass
+        
+print(real_route_astar)
 
 
 
 
-
+# print('original route :',route)
+# print('astar route    :',real_route_astar)
 
 
 
