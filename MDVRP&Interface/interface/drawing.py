@@ -1,8 +1,7 @@
-
-
 import pygame as pg
 import yaml
 from nwx import NX
+# from traffic import Traffic_Management
 TFont = ("Arial", 12,'bold')
 TFont2 = ("Arial", 8,'bold')
 
@@ -10,6 +9,7 @@ class Drawing():
 
     def __init__(self): 
         self.nw = NX()
+        # self.traffic = Traffic_Management()
         self.TFont = TFont
         self.TFont2 = TFont2
         self.endloop= 0
@@ -26,31 +26,14 @@ class Drawing():
         aliceblue	= (240,248,255)	 
         antiquewhite	= (250,235,215)	 
         antiquewhite1	=	  (255,239,219)	 
-      
-        aquamarine3	=  (102,205,170)	 
-        azure4	=  (131,139,139)	 
-        banana	=  (227,207,87)	 
-  
-      
-        blue	=  (0,0,255)	 
+        aquamarine3	=  (102,205,170)	  
         blue2	=  (0,0,238)	 
-      
-        brick	=	  (156,102,31)	 
         brown	=  (165,42,42)	 
-        brown1	=	  (255,64,64)	 
-        brown2	=	  (238,59,59)	 
- 
         burlywood4	=	  (139,115,85)	 
-        burntsienna	=  (138,54,15)	 
-        burntumber	=	  (138,51,36)	 
-        cadetblue	=  (95,158,160)	 
-
         cobalt	=	  (61,89,171)	 
         cobaltgreen	=	  (61,145,64)	 
         coldgrey	=	  (128,138,135)	 
         coral	=	  (255,127,80)	 
-        coral1	=	  (255,114,86)	 
-        coral2	=	  (238,106,80)	 
         coral3	=	  (205,91,69)	 
         coral4	=	  (139,62,47)	 
         cornflowerblue	=	  (100,149,237)	 
@@ -59,7 +42,6 @@ class Drawing():
         cornsilk3	=	  (205,200,177)	 
         cornsilk4	=	  (139,136,120)	 
         crimson	=	  (220,20,60)
-
         self.color = [firebrick,navy,seagreen,brown,aquamarine3,azure4,blue2,burlywood4,chartreuse3,coral3,aliceblue,antiquewhite,antiquewhite1,crimson,cornsilk4,cornsilk3,cornsilk2,cornsilk1,cornflowerblue,coral4
                       , coldgrey, coral,cobaltgreen,cobalt]
         self.copy_screen_list = []
@@ -106,6 +88,7 @@ class Drawing():
         pg.display.set_caption('map drawer (press ENTER to add edge)')
 
     def overlay_map(self,root_filename,type):
+        # self.traffic.print_img(root_filename)
         if type=='yaml':
             with open(root_filename,'r') as f:
                 yml_dict = yaml.safe_load(f)
@@ -135,6 +118,7 @@ class Drawing():
             self.copy_screen_list=[]
             self.copy_screen_list.append(self.copy_screen)
             pg.display.update()
+        
 
     def customer_circle(self,pos_x,pos_y,radius):
         pg.draw.circle(self.screen, self.color[2],[pos_x, pos_y],radius)
@@ -439,21 +423,12 @@ class Drawing():
         connect_index = self.index_connect_point_in_all_vp
 
     def send_to_nwx(self):
-        # self.screen =  self.before_edge_screen.copy()
         self.screen.blit(self.before_edge_screen,(0,0))
-        # print('All node list = ',self.all_via_point)
-        # print('List_of_edge  = ',self.edge_list)
-        # print('All_node_pos  = ',self.all_via_point_pos)
-        # print('depot_index   = ' ,self.index_depot_in_all_vp)
-        # print('customer_index = ',self.index_customer_in_all_vp)
-        # print('connect_index  = ',self.index_connect_point_in_all_vp)
-
         self.major_matrix = self.nw.do_dist_matrix(list_of_node=self.all_via_point,list_of_edge=self.edge_list
                                                     ,pos_of_node=self.all_via_point_pos
                                                     ,customer_index_list=self.index_customer_in_all_vp
-                                                    ,connect_point_list=self.index_connect_point_in_all_vp)
-        #self.nw.mapping_with_ui()
-        # print(self.major_matrix)
+                                                    ,connect_point_list=self.index_connect_point_in_all_vp
+                                                    ,depot_index=self.index_depot_in_all_vp)
         return self.major_matrix
 
     def back_to_original(self):
@@ -558,6 +533,7 @@ class Drawing():
                 else:
                     self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1+amount_depot] 
 
+        print('POS IN A*ROUTE = ',self.true_route)
         for i in range(len(self.true_route)):
             colors = self.color[i]
             for j in range(len(self.true_route[i])-1):

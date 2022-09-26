@@ -43,21 +43,25 @@ class NX():
         nx.draw(self.Graph,pos,with_labels = True,arrows = True)
         plt.show()
 
-    def del_connect_index_in_matrix(self,matrix,index_connect):
+    def del_connect_index_in_matrix(self,matrix,index_connect,index_depot):
         n=0
         for i in index_connect:
             matrix = np.delete(matrix,(i-1-n),axis=1)
             matrix = np.delete(matrix,(i-1-n),axis=0)
             n+=1
+        for i in index_depot:
+            matrix = np.delete(matrix,(0),axis=1)
+            matrix = np.delete(matrix,(0),axis=0)
         return matrix
     
 
-    def do_dist_matrix(self,list_of_node,list_of_edge,pos_of_node,customer_index_list,connect_point_list):
+    def do_dist_matrix(self,list_of_node,list_of_edge,pos_of_node,customer_index_list,connect_point_list,depot_index):
         global adj_dist_matrix
         global node_pos
         global node_list
         global edge_list
 
+        # print('DEPOT _index = ',depot_index)
         print('Node with pos and Edge has been send to nx Graph')
         # print('-------------List edge ----------------  =',list_of_edge)
         self.node_list = list_of_node
@@ -98,18 +102,21 @@ class NX():
        # print('Major matrix is calculated')
         self.dist_matrix = distance_matrix
 
-        adj_dist_matrix    =  self.dist_matrix    
-        print(self.dist_matrix )
+        # adj_dist_matrix    =  self.dist_matrix    
+        # print(self.dist_matrix )
 
 
         self.customer_index = customer_index_list
         self.connect_point_index = connect_point_list
 
-        # self.minor_matrix = distance_matrix.copy()
-        # self.minor_matrix = self.del_connect_index_in_matrix(self.dist_matrix,connect_point_list)
-
-   
+        self.minor_matrix = distance_matrix.copy()
+        self.minor_matrix = self.del_connect_index_in_matrix(self.dist_matrix,connect_point_list,depot_index)
+        adj_dist_matrix = self.minor_matrix
+        # print('MAJOR :',self.dist_matrix)
+        # print('ADJ  :',adj_dist_matrix)
         return distance_matrix
+
+
     def del_duplicate_route(self,route):
         pure = []
         temp = 0
@@ -121,13 +128,13 @@ class NX():
 
     def mapping_with_ui(self,solution):
         self.create(node_list,node_pos,edge_list)
-        print('MAPPER')
-        print('list : ',node_list)
-        print('pos : ',node_pos)
-        print('edge : ',edge_list)
+        # print('MAPPER')
+        # print('list : ',node_list)
+        # print('pos : ',node_pos)
+        # print('edge : ',edge_list)
 
         
-        print('Amount Depot : ',drawing.amount_depot)
+        # print('Amount Depot : ',drawing.amount_depot)
         list_of_node = list(node_list)
         real_route = []
         real_route_astar = []
@@ -152,7 +159,7 @@ class NX():
 
         #[[1, '1', '2', '3', '4', 1], [2, '7', '6', '5', 2]]
 
-        print('sol route :',true_route)
+        # print('sol route :',true_route)
         for i in true_route: #Do point in route to look up node list
             for j in range(len(i)):
                 check_depot = isinstance(i[j],int)
@@ -160,7 +167,7 @@ class NX():
                     i[j] = int(i[j])
                     i[j] = i[j] + drawing.amount_depot
 
-        print('look up :',true_route)
+        # print('look up :',true_route)
 
         for num in range(drawing.amount_depot):
             real_route.append([])
@@ -174,19 +181,19 @@ class NX():
                 real_route[depot-1].append(self.astar(int(i[j]),int(i[j+1])))
                 
         
-        print('real route :',real_route)
+        # print('real route :',real_route)
 
         for i in range(len(real_route)):
             x = real_route[i]
             for el in sum(x,[]):
                 real_route_astar[i].append(el)
 
-        print('combine route :',real_route_astar)
+        # print('combine route :',real_route_astar)
         for i in range(len(real_route_astar)):
             depot = real_route_astar[i][0]
             real_route_astar[i] = self.del_duplicate_route(real_route_astar[i])
 
-        print('del dep route :',real_route_astar)
+        # print('del dep route :',real_route_astar)
 
         for i in real_route_astar:
             for j in range(len(i)):
@@ -195,7 +202,7 @@ class NX():
                 else:
                     i[j] = str(i[j]-drawing.amount_depot)
         
-        print('real return route :',real_route_astar)
+        print('A* route :','\n',real_route_astar)
 
         return real_route_astar
         #plt.show()
@@ -271,8 +278,8 @@ class NX():
                 else:
                     i[j] = str(i[j]- drawing.amount_depot)
       
-        print('original route :',self.true_route)
-        print('astar route    :',real_route_astar)
+        # print('original route :',self.true_route)
+        # print('astar route    :',real_route_astar)
         astar_path = real_route_astar
         return real_route_astar
 

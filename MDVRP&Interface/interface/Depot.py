@@ -86,25 +86,28 @@ class Depot():
 
 	# Distance 
 	def distance(self,c1,c2):
-
-
-		# if solver.initial_clustering_state==1:
-		# 	solver.initial_clustering_state=0
-		return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
-
-
-		# if solver.initial_clustering_state==0 and tk_.mode == 1:
-			# return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
 		pre = int(str(c1))
 		after =  int(str(c2))
-		shift = int(drawing.amount_depot)-1
-		
+		# shift = int(drawing.amount_depot)
+		shift = 0
 		distance_matrix = nwx.adj_dist_matrix
-
-		cost = distance_matrix[pre+shift][after+shift]
-		# cost = distance_matrix[pre-1][after-1]
+	
+		cost = distance_matrix[pre+shift-1][after+shift-1]
+	
 
 		return cost
 			
 		# elif  tk_.mode == 2:
 		# 	return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
+
+	
+	# # Distance
+	# def distance(self,c1,c2):
+	# 	print(c1,c2)
+	# 	pre = int(str(c1))
+	# 	after =  int(str(c2))
+	# 	distance_matrix = nwx.adj_dist_matrix
+	# 	cost = distance_matrix[pre-1][after-1]
+	
+	# 	return cost
+			

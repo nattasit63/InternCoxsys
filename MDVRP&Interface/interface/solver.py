@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 BOUND = 2
 POPULATION_SIZE = 200
-GENERATION_SPAN = 250
+GENERATION_SPAN = 125
 NUM_ELITE = 4
 CROSSOVER_PROB = 0.6
 INTRA_D_MUTATION_PROB = 0.1
@@ -29,6 +29,7 @@ class Solver():
         self.t =0
         self.population = []
         self.customer_list = []
+        self.best_fitness = []
     
     def clearr(self):
         self.path_with_file = ''
@@ -53,9 +54,6 @@ class Solver():
         self.y = 0
         self.D = 0
         self.Q = 0
-
-
-    
     def insert_file_path(self,path):
 
         print('PATH  :  ',str(path))
@@ -87,7 +85,6 @@ class Solver():
             self.D = self.depots[i][0]
             self.Q = self.depots[i][1]
             self.depots[i]= Depot.Depot(self.k,self.x,self.y,self.D,self.Q,self.m,self.t)
-
     def initial_depot_clustering(self):
         global initial_clustering_state
         initial_clustering_state=1
@@ -118,8 +115,8 @@ class Solver():
                 
                 # print(t.customer_list)
                 random.shuffle(t.customer_list)
-            if i//5==1:
-                print("Creating chromosome " + str(i+1))
+            
+            print("Creating chromosome " + str(i+1))
             
             population.append(Chromosome.Chromosome(temp_depots))
             # print(population)
@@ -142,8 +139,8 @@ class Solver():
                 [c.y for c in chromosome.get_repr()],"k+",mew='1')
         plt.plot([d.x for d in chromosome.depots], \
                 [d.y for d in chromosome.depots],"ks",markerfacecolor='none',markersize='8',mew='1')
-        plt.show(block=False)
-        plt.pause(1)
+        # plt.show(block=False)
+        # plt.pause(1)
         plt.close()
 
     def print_sol(self,chromosome):
@@ -166,8 +163,9 @@ class Solver():
             fitness = copy.deepcopy([(chrom.fitness(),chrom) for chrom in population])
             fitness.sort(key=itemgetter(0))
             avg_fitness = sum(f[0] for f in fitness)/len(population)
-            if generation%10==1:
-                print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
+      
+            print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
+            self.best_fitness.append(fitness[0][0])
             new_pop = []
             while len(new_pop) < len(population):
                 p1 = self.selection(population)
@@ -201,6 +199,7 @@ class Solver():
         # print('a =       ',best_candidate.total_route_duration())
         self.best_cost = best_candidate.total_route_duration()
         end_time = time.time()
+        print('BEST FITNESS  : ',self.best_fitness)
         print('calculated time = ' ,end_time-start_time ,'  seconds')
         self.print_sol(best_candidate)
         self.plot(best_candidate)
@@ -334,4 +333,3 @@ class Solver():
         child.depots[depot_num].update_routes()
         return child
 
-# run()

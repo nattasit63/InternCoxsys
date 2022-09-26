@@ -175,9 +175,13 @@ class GUI(Node):
         self.solve2 = Solver()
         self.solve2.insert_file_path(self.write_file_path)
         self.draw.back_to_original()
+
+        
         best_cost,solution = self.solve2.run()
         tkinter.messagebox.showinfo('Calculation','Done . . .!')
-        self.draw.visual(solution)
+        self.draw.send_to_nwx()
+        self.draw.visual_astar(self.nw.mapping_with_ui(solution))
+       # self.draw.visual(solution)
 
     def home(self):
         try:
@@ -232,9 +236,9 @@ class GUI(Node):
         if self.mode==0:
             self._tk.create_txt_pos(self._tk.intro_txt,w/68.8,h/37.5,"light grey",self.bg_color)
             self._tk.create_txt_pos(self._tk.intro_txt2,w/68.8,h/37.5 + h/18.75,"light grey",self.bg_color)
-            self._tk.create_txt_pos(self._tk.intro_txt3,w/68.8,h/37.5 + h/18.75 +h/15,"light grey",self.bg_color)
+            # self._tk.create_txt_pos(self._tk.intro_txt3,w/68.8,h/37.5 + h/18.75 +h/15,"light grey",self.bg_color)
             self._tk.create_btn(self.root,'Create file',int(h/150),int(w/91.73),self._tk.create_file_btn,w/2.29,h/2)
-            self._tk.create_btn(self.root,'Import file',int(h/150 ),int(w/91.73),self._tk.import_file_btn,w/2.29,h/2+h/3.75)      
+            # self._tk.create_btn(self.root,'Import file',int(h/150 ),int(w/91.73),self._tk.import_file_btn,w/2.29,h/2+h/3.75)      
             self.mode = self._tk.mode
         elif self.mode == 1 :
             if self.clear==0:

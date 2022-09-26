@@ -13,7 +13,8 @@ class TK_():
         self.TFont = TFont
         self.bg_color = '#856ff8'
         self.intro_txt = "This is a program to do fleet & traffic management of autonomous mobile robot."
-        self.intro_txt2 = "\nIf you need to create your own system ,  Click on : Create file"
+        # self.intro_txt2 = "\nIf you need to create your own system ,  Click on : Create file"
+        self.intro_txt2 = "\nTo create your custom system ,Click on : Create file"
         self.intro_txt3 = "\nIf you need to use an exist file                 ,  Click on : Import file"
         self.mode = 0
         self.info_txt = "Instruction for STEP 2 :"
