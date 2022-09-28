@@ -8,13 +8,13 @@ import matplotlib.pyplot as plt
 from agent import Agent
 from scipy.optimize import linear_sum_assignment
 
-GRID_SIZE = 3
+GRID_SIZE = 5
 STAT_OBS = [([10,10],[20,20])]
 START = [[584, 83],[575,167]]
 GOAL  = [[584, 335],[579,331]]
 # START = [[100,100]]
 # GOAL = [[200,200]]
-ROBOT_RADIUS = 1
+ROBOT_RADIUS = 3 
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
 RESULT = []
 
@@ -28,9 +28,13 @@ SAMPLE =    [
              [632, 379], [586, 380], [581, 297], [433, 287], [383, 392], [445, 466], [389, 499]]
             ]
 
+# SAMPLE =    [
+#             [[198, 207], [273, 169], [267, 71],[273, 169], [118, 167], [273, 169], [267, 71], [402, 86], [523, 114]]
+           
+#             ]
 
 
-def assigner_from_fleet(starts,goals  ):
+def assigner_from_fleet(starts,goals  ):                           
     print('-'*20)
     n= len(starts)
     agent = []
@@ -43,6 +47,7 @@ def minion(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]]):
     assert(len(starts) == len(goals))
     agents = []
     for i, start in enumerate(starts):
+        # print('satert :',start)
         # print('Goal :',goals[i])
         # agents.append(Agent(start, goals[col_ind[i]]))
         agents.append(Agent(start, goals[i]))
@@ -83,37 +88,44 @@ class Traffic_Management:
                     pass
         
         # print(self.obs_ind)
+        start,goal = self.prepare_data(SAMPLE)
+        print('starter :',start[0][0])
+        # print('goaler  :',goal[0])
         planner = Planner(grid_size=GRID_SIZE,robot_radius=ROBOT_RADIUS,static_obstacles=self.obs_ind)
-        path = planner.plan(starts=START,goals=GOAL,debug=False,assign=minion)
+        # path = planner.plan(starts=START,goals=GOAL,debug=False,assign=minion)
+        
+        for i in range(len(start)):
+            # path = planner.plan(starts=start[i],goals=goal[i],debug=True,assign=minion)
+            # path = planner.plan(starts= [[198, 207]],goals=[[273, 169]],debug=True,assign=minion)
+            for l in range(len(start[i])):
+                path = planner.plan(starts= [start[i][l]],goals=[goal[i][l]],debug=True,assign=minion)
+                for k in path:
+                    RESULT.append(path)
 
-        for i in path:
-            RESULT.append(path)
-
-
-        for i in range(len(path)):
-            for j in range(len(path[i])):         
-                x_pos = path[i][j][1]
-                y_pos = path[i][j][0]
-                self.img_copy[x_pos][y_pos] = COLOR[i]
+                for z in range(len(path)):
+                    for j in range(len(path[z])):         
+                        x_pos = path[z][j][1]
+                        y_pos = path[z][j][0]
+                        self.img_copy[x_pos][y_pos] = COLOR[z%3]
         
         cv2.imshow("Image Copy", self.img_copy)       
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        # return RESULT
+        return RESULT
     
-    def run(self,fleet_result):
-
+    def prepare_data(self,fleet_result):
         start_list = []
         goal_list = []
-        obs_list = self.obs_ind
         for route in fleet_result:
             start_list.append(route[0:len(route)-1])
             goal_list.append(route[1:len(route)])
-        try:
-            assert(len(start_list)==len(goal_list))
-            return assigner_from_fleet(start_list,goal_list)
-        except AssertionError:
-            print('Not equal')
+        
+        return start_list,goal_list
+        # try:
+        #     assert(len(start_list)==len(goal_list))
+        #     return assigner_from_fleet(start_list,goal_list)
+        # except AssertionError:
+        #     print('Not equal')
 
     
 
