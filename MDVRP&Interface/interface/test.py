@@ -6,74 +6,88 @@ from typing import List, Tuple
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
+q = [[[199, 197], [243, 165], [328, 232], [361, 185], [243, 165], [199, 197]]]
 
-class Agent:
-
-    def __init__(self, start: Tuple[int, int], goal: Tuple[int, int]):
-        self.start = np.array(start)
-        self.goal = np.array(goal)
-
-    # Uniquely identify an agent with its start position
-    def __hash__(self):
-        return int(str(self.start[0]) + str(self.start[1]))
-
-    def __eq__(self, other: 'Agent'):
-        return np.array_equal(self.start, other.start) and \
-               np.array_equal(self.goal, other.goal)
-
-    def __str__(self):
-        return str(self.start.tolist())
-
-    def __repr__(self):
-        return self.__str__()
+for i in range(len(q)):
+    for j in range(len(q[i])):
+        print(q[i][j])
+        q[i][j][0] = q[i][j][0]*200/800
+        q[i][j][1] = q[i][j][1]*200/800
+        # for k in range(q[i][j]):
+        #     q[i][j][k]
+        print(q[i][j])
+    
+print(len(q[0]))
+print(q)
 
 
-def min_cost(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]]):
-    # The number of start positions must be equal to the number of goal positions
-    assert(len(starts) == len(goals))
+# class Agent:
 
-    sqdist = lambda x, y: (x[0]-y[0])**2 + (x[1]-y[1])**2
-    cost_vec = []
-    for start in starts:
-        for goal in goals:
-            cost_vec.append(sqdist(start, goal))
-    n = len(starts)
-    cost_mtx = np.array(cost_vec).reshape((n, n))
-    row_ind, col_ind = linear_sum_assignment(cost_mtx)
-    agents = []
-    for i, start in enumerate(starts):
-        agents.append(Agent(start, goals[col_ind[i]]))
-    return agents
+#     def __init__(self, start: Tuple[int, int], goal: Tuple[int, int]):
+#         self.start = np.array(start)
+#         self.goal = np.array(goal)
 
+#     # Uniquely identify an agent with its start position
+#     def __hash__(self):
+#         return int(str(self.start[0]) + str(self.start[1]))
 
-# Greedily choosing closest distance
-def greedy_assign(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]]):
-    # The number of start positions must be equal to the number of goal positions
-    assert(len(starts) == len(goals))
+#     def __eq__(self, other: 'Agent'):
+#         return np.array_equal(self.start, other.start) and \
+#                np.array_equal(self.goal, other.goal)
 
-    goal_set = set(goal for goal in goals)
-    sqdist = lambda x, y: (x[0]-y[0])**2 + (x[1]-y[1])**2
-    agents = []
-    for start in starts:
-        closest = float('inf')
-        closest_goal = None
-        for goal in goal_set:
-            d = sqdist(start, goal)
-            if d < closest:
-                closest = d
-                closest_goal = goal
-        goal_set.remove(closest_goal)
-        agents.append(Agent(start, closest_goal))
-    return agents
+#     def __str__(self):
+#         return str(self.start.tolist())
+
+#     def __repr__(self):
+#         return self.__str__()
 
 
+# def min_cost(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]]):
+#     # The number of start positions must be equal to the number of goal positions
+#     assert(len(starts) == len(goals))
+
+#     sqdist = lambda x, y: (x[0]-y[0])**2 + (x[1]-y[1])**2
+#     cost_vec = []
+#     for start in starts:
+#         for goal in goals:
+#             cost_vec.append(sqdist(start, goal))
+#     n = len(starts)
+#     cost_mtx = np.array(cost_vec).reshape((n, n))
+#     row_ind, col_ind = linear_sum_assignment(cost_mtx)
+#     agents = []
+#     for i, start in enumerate(starts):
+#         agents.append(Agent(start, goals[col_ind[i]]))
+#     return agents
+
+
+# # Greedily choosing closest distance
+# def greedy_assign(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]]):
+#     # The number of start positions must be equal to the number of goal positions
+#     assert(len(starts) == len(goals))
+
+#     goal_set = set(goal for goal in goals)
+#     sqdist = lambda x, y: (x[0]-y[0])**2 + (x[1]-y[1])**2
+#     agents = []
+#     for start in starts:
+#         closest = float('inf')
+#         closest_goal = None
+#         for goal in goal_set:
+#             d = sqdist(start, goal)
+#             if d < closest:
+#                 closest = d
+#                 closest_goal = goal
+#         goal_set.remove(closest_goal)
+#         agents.append(Agent(start, closest_goal))
+#     return agents
 
 
 
-START = [[584, 83],[575,167]]
-GOAL  = [[584, 335],[579,331]]
 
-print(min_cost(START,GOAL))
+
+# START = [[584, 83],[575,167]]
+# GOAL  = [[584, 335],[579,331]]
+
+# print(min_cost(START,GOAL))
 
 
 

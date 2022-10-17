@@ -199,7 +199,7 @@ class Solver():
         # print('a =       ',best_candidate.total_route_duration())
         self.best_cost = best_candidate.total_route_duration()
         end_time = time.time()
-        print('BEST FITNESS  : ',self.best_fitness)
+        # print('BEST FITNESS  : ',self.best_fitness)
         print('calculated time = ' ,end_time-start_time ,'  seconds')
         self.print_sol(best_candidate)
         self.plot(best_candidate)

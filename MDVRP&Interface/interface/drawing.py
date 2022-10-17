@@ -69,6 +69,7 @@ class Drawing():
         self.edge_list = []
         self.index_edge_screen = 0
         self.get_into_state = 0
+        self.pixel_route = []
         self.all_via_point = []
         self.all_via_point_pos = [] 
         self.num_all_vp = 0
@@ -77,9 +78,13 @@ class Drawing():
         self.index_depot_in_all_vp = []
 
     def initial_screen(self,w,h):
+        global img_width,img_height
+        img_width = w
+        img_height = h
+        print('Import image with size : ',str(img_width)+'x'+str(img_height))
         pg.init()
         pg.font.init()
-        self.width,self.height = 800,600
+        self.width,self.height = 800,800
         self.font = pg.font.SysFont("Arial",12)
         self.font2 =  pg.font.SysFont("Arial",8)
         self.screen = pg.display.set_mode((self.width,self.height))
@@ -470,18 +475,16 @@ class Drawing():
                 current = self.true_route[i][j]
                 next = self.true_route[i][j+1]
                 self.connect_point(current,next,colors)
+        
+        print('ROUTE : ',self.true_route)
         return self.true_route
 
 
 
     # def visual(self,solution):  #for adj_matrix
-        
     #     self.true_route = []
     #     sol = solution.split('\n')
-
     #     sol = sol[:-1]
-
-
     #     # print(sol)
     #     for i in range(len(sol)):
     #         sol[i] = sol[i].split('\t')
@@ -491,7 +494,6 @@ class Drawing():
     #         sol[i][0] = int(sol[i][0])
     #         sol[i][1] =sol[i][1].split()
     #     # print('sol from loop [i] :',sol)
-
     #     for j in range(len(sol)):
     #         depot = sol[j][0]
     #         for point in range(len(sol[j][1])):
@@ -499,11 +501,7 @@ class Drawing():
     #                 sol[j][1][point]=depot
     #         self.true_route.append(sol[j][1])
     #         # print('true route  = ',self.true_route)
-
     #     print('true_route from loop [j] :',self.true_route)
-        
-
-
     #     for i in range(len(self.true_route)):
     #         for j in range(len(self.true_route[i])):
     #             check_depot = isinstance(self.true_route[i][j],int)
@@ -511,8 +509,6 @@ class Drawing():
     #                 self.true_route[i][j] = self.depot_pos[int(self.true_route[i][j])-1]
     #             else:
     #                 self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1]
-
-        
     #     for i in range(len(self.true_route)):
     #         colors = self.color[i]
     #         for j in range(len(self.true_route[i])-1):
@@ -520,10 +516,11 @@ class Drawing():
     #             next = self.true_route[i][j+1]
     #             self.connect_point(current,next,colors)
     #             # print(color_pos = (current,next))
-        
     #     return self.true_route
+    
 
     def visual_astar(self,solution):
+        global pos_a_star
         self.true_route =solution
         for i in range(len(self.true_route)):
             for j in range(len(self.true_route[i])):
@@ -534,6 +531,7 @@ class Drawing():
                     self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1+amount_depot] 
 
         print('POS IN A*ROUTE = ',self.true_route)
+        pos_a_star = self.true_route
         for i in range(len(self.true_route)):
             colors = self.color[i]
             for j in range(len(self.true_route[i])-1):
@@ -541,7 +539,21 @@ class Drawing():
                 next = self.true_route[i][j+1]
                 self.connect_point(current,next,colors)
         
-      
+    
+    def real_position(self):
+        ans = []
+        global pixel_pos
+        for i in range(len(pos_a_star)):
+            w=[]
+            for j in range(len(pos_a_star[i])):
+                q=[]
+                q.append(pos_a_star[i][j][0]*img_width/800.00)
+                q.append(pos_a_star[i][j][1]*img_height/800.00)
+                w.append(q)
+            ans.append(w)
+        pixel_pos = ans
+        return ans
+
     def quit(self,isQuit):
         if isQuit == 1 :
             return pg.quit()

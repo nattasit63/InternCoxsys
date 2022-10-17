@@ -319,9 +319,10 @@ class GUI(Node):
             # astar_route =  nwx.astar_path 
             print(self.nw.mapping_with_ui(solution))
             
+            
             # self.draw.visual(solution)
             self.draw.visual_astar(self.nw.mapping_with_ui(solution))
-          
+            print(self.draw.real_position())
             self.mode = 16
         
         elif self.mode == 16 :
