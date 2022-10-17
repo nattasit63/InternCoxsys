@@ -1,0 +1,4 @@
+uint8 id
+---
+bool flag
+geometry_msgs/Point position
