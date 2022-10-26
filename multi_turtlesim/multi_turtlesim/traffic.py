@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from typing import Callable, List, Tuple
+from time import time
+from typing import  List, Tuple
 from cbs_mapf.planner import Planner
 import cv2 
 import numpy as np
@@ -10,36 +11,16 @@ from rclpy.node import Node
 from std_msgs.msg import Int16
 
 GRID_SIZE = 20
-ROBOT_RADIUS = 5 
+ROBOT_RADIUS = 8
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
 RESULT = []
 
-MAP_PATH  ='/home/natta/interface_ws/src/full_interface/config/map_demo.pgm'
+# MAP_PATH  ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
 
-SAMPLE =    [[[129, 164], [233, 159], [245, 69], [323, 101], [245, 69], [233, 159], [129, 164]], 
-             [[226, 427], [245, 384], [350, 421], [377, 314], [299, 242], [323, 320], [262, 316], [222, 294], [299, 242], [381, 163], [299, 242], [262, 316], [245, 384], [226, 427]]]
-
-
+# SAMPLE =    [[[129, 164], [233, 159], [245, 69], [323, 101], [245, 69], [233, 159], [129, 164]], 
+#              [[226, 427], [245, 384], [350, 421], [377, 314], [299, 242], [323, 320], [262, 316], [222, 294], [299, 242], [381, 163], [299, 242], [262, 316], [245, 384], [226, 427]]]
 
 
-def get_obstacle_ind(name):
-    obs_ind=[]
-    map_img = name 
-    originalImage = cv2.imread(name)
-    imS = cv2.resize(originalImage, (800, 800))
-    grayImage = cv2.cvtColor(imS, cv2.COLOR_BGR2GRAY)      
-    (thresh, blackAndWhiteImage) = cv2.threshold(grayImage, 127, 255, cv2.THRESH_BINARY)
-    print('Converted to Gray Scale')
-    img_copy = imS.copy()
-    for w in range (1,blackAndWhiteImage.shape[0]):
-        for h in range (1,blackAndWhiteImage.shape[1]):
-            pixel = blackAndWhiteImage[w,h]
-            if pixel>=10:
-                img_copy[w][h]=(255,255,255)                 
-            else:
-                obs_ind.append((h,w))
-                img_copy[w][h]=(0,0,0)
-    return obs_ind
 
 class Traffic_Management():
     def __init__(self):
@@ -47,20 +28,57 @@ class Traffic_Management():
         self.grid_size = GRID_SIZE
         self.start = []
         self.goal = []
+        self.current_goal =[]
         self.obs_list = []
         self.obs_ind = []
-
-    def optimal_plan(self,start_list,goal_list,obstacle):
-        # self.obs_ind = self.get_obstacle_ind(map_path)
-        self.obs_ind  =obstacle
-        # all_start_list,all_goal_list = self.prepare_data(fleet_result)
-        planner = Planner(grid_size=GRID_SIZE,robot_radius=ROBOT_RADIUS,static_obstacles=self.obs_ind)
-        path = planner.plan(starts= start_list,goals=goal_list,debug=False,assign=direct_assigner)
+        self.index = 0
+        self.current_index =[]
+        
+    def get_plan_data_list(self,x,id):
+        start = []
+        goal = []
+        for i in range(len(x)):
+            start.append(x[i][id])
+            goal.append(x[i][id+1])
+        return start,goal
+        
+    def initial(self,map_path,fleet:List[Tuple[int, int]]):
+        def int_path(x):
+            n=0
+            new_path = []
+            for l in range(len(x)):
+                new_path.append([])
+            for i in x:
+                for j in i:
+                    new_path[n].append([int(j[0]),int(j[1])])
+                n+=1
+            return new_path    
+        self.obs_ind  = self.get_obstacle_ind(map_path)
+        self.planner = Planner(grid_size=GRID_SIZE,robot_radius=ROBOT_RADIUS,static_obstacles=self.obs_ind)
+        self.fleet_pixel_equal = self.equal_len(int_path(fleet))
+        for i in range(len(self.fleet_pixel_equal)):
+            self.current_index.append(0)
+        self.max_index = len(self.fleet_pixel_equal[0])
+        #First path for Inintial
+        start,goal = self.get_plan_data_list(self.fleet_pixel_equal,self.index)
+        self.current_goal = goal.copy()
+        path = self.planner.plan(starts= start,goals=goal,debug=False,assign=direct_assigner)
         return path
-        
-
-        
-
+    
+    def optimal_plan(self,Trigger=None,arrive_id=None,current_all_pos=None):
+        to_int = lambda x : [[int(round(x[0][0])),int(round(x[0][1]))],[int(round(x[1][0])),int(round(x[1][1]))]]
+        if Trigger: 
+            print(f'prev : {self.current_goal}')
+            self.current_index[arrive_id] +=1
+            q,new_goal = self.get_plan_data_list(self.fleet_pixel_equal,self.current_index[arrive_id]) 
+            self.current_goal[arrive_id] = to_int(new_goal)[arrive_id]
+            print(f'after : {self.current_goal}')
+            start = to_int(current_all_pos)
+            path = self.planner.plan(starts= start,goals=self.current_goal,debug=False,assign=direct_assigner)
+            
+        return path
+    
+    
     def get_obstacle_ind(self,name):
         self.map_img = name 
         originalImage = cv2.imread(name)
@@ -173,9 +191,6 @@ def direct_assigner(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]])
         agents.append(Agent(start, goals[i]))
     return agents
 
-PATH2 = [[[29.0, 210.0], [122.0, 202.0], [28.0, 101.0], [23.0, 31.0], [228.0, 29.0], [23.0, 31.0], [28.0, 101.0], [122.0, 202.0], [29.0, 210.0]],
-        [[614.0, 726.0], [558.0, 728.0], [551.0, 586.0], [498.0, 587.0], [418.0, 584.0], [411.0, 402.0], [248.0, 381.0], [411.0, 402.0], [418.0, 584.0], [498.0, 587.0], [551.0, 586.0], [539.0, 266.0], [747.0, 299.0], [539.0, 266.0], [551.0, 586.0], [498.0, 587.0], [418.0, 584.0], [431.0, 706.0], [418.0, 584.0], [411.0, 402.0], [391.0, 277.0], [260.0, 278.0], [301.0, 181.0], [253.0, 100.0], [423.0, 174.0], [391.0, 277.0], [411.0, 402.0], [418.0, 584.0], [498.0, 587.0], [551.0, 586.0], [558.0, 728.0], [614.0, 726.0]]]
-
 
 
 
@@ -185,6 +200,25 @@ PATH2 = [[[29.0, 210.0], [122.0, 202.0], [28.0, 101.0], [23.0, 31.0], [228.0, 29
 #     print(traffic_manager.full_plan(name=MAP_PATH))
 #     rclpy.spin(traffic_manager)
 
+# def main(args=None):
+#     state = 0
+#     RUN = True
+#     First_path = traffic.initial(map_path=MAP_PATH,fleet=PATH)
+#     a = traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[143.0, 211.0],[440, 700]])
+#     print(a)
+    # while RUN:
+    #     a = traffic.optimal_plan(Trigger=True)
+    #     print(a)
+    #     break
+        
 
-# if __name__ == '__main__':
+
+# if __name__=='__main__':
+#     PATH = [[[59.0, 216.0], [143.0, 211.0], [135.0, 94.0], [251.0, 92.0], [135.0, 94.0], [143.0, 211.0], [59.0, 216.0]], 
+#     [[440.0, 700.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [327.0, 208.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [549.0, 599.0], [703.0, 708.0], [559.0, 478.0], [549.0, 599.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [249.0, 290.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [440.0, 700.0]]]
+#     essential_pos = [[[59, 216], [440, 700]], [[251, 92], [327, 208], [249, 290], [559, 478], [703, 708]]]
+#     MAP_PATH = '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+        
+#     traffic = Traffic_Management()
+
 #     main()
