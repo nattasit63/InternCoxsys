@@ -10,8 +10,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16
 
-GRID_SIZE = 20
-ROBOT_RADIUS = 8
+GRID_SIZE = 16
+ROBOT_RADIUS = 4
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
 RESULT = []
 
@@ -28,6 +28,7 @@ class Traffic_Management():
         self.grid_size = GRID_SIZE
         self.start = []
         self.goal = []
+        self.current_start = []
         self.current_goal =[]
         self.obs_list = []
         self.obs_ind = []
@@ -59,24 +60,36 @@ class Traffic_Management():
         for i in range(len(self.fleet_pixel_equal)):
             self.current_index.append(0)
         self.max_index = len(self.fleet_pixel_equal[0])
-        #First path for Inintial
-        start,goal = self.get_plan_data_list(self.fleet_pixel_equal,self.index)
+           
+    def planning(self,start,goal):
+        print(f'Planning at start:{start} , goal: {goal}')
+        self.current_start= start.copy()
         self.current_goal = goal.copy()
         path = self.planner.plan(starts= start,goals=goal,debug=False,assign=direct_assigner)
         return path
     
+    def tracking(self):
+        return self.current_start,self.current_goal
+    
     def optimal_plan(self,Trigger=None,arrive_id=None,current_all_pos=None):
         to_int = lambda x : [[int(round(x[0][0])),int(round(x[0][1]))],[int(round(x[1][0])),int(round(x[1][1]))]]
+        if Trigger==None:
+            #First path for Inintial
+            start,goal = self.get_plan_data_list(self.fleet_pixel_equal,0)
+            return self.planning(start,goal)    
         if Trigger: 
-            print(f'prev : {self.current_goal}')
+            # print(f'prev : {self.current_goal}')
             self.current_index[arrive_id] +=1
+            # if self.current_index[arrive_id]>=self.max_index:
+            #     self.current_index[arrive_id]=self.max_index-1
             q,new_goal = self.get_plan_data_list(self.fleet_pixel_equal,self.current_index[arrive_id]) 
             self.current_goal[arrive_id] = to_int(new_goal)[arrive_id]
-            print(f'after : {self.current_goal}')
             start = to_int(current_all_pos)
-            path = self.planner.plan(starts= start,goals=self.current_goal,debug=False,assign=direct_assigner)
+            path =  self.planning(start,self.current_goal)
+            # path = self.planner.plan(starts= start,goals=self.current_goal,debug=False,assign=direct_assigner)
+            Trigger = False
             
-        return path
+            return path
     
     
     def get_obstacle_ind(self,name):
@@ -203,13 +216,10 @@ def direct_assigner(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]])
 # def main(args=None):
 #     state = 0
 #     RUN = True
-#     First_path = traffic.initial(map_path=MAP_PATH,fleet=PATH)
-#     a = traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[143.0, 211.0],[440, 700]])
-#     print(a)
-    # while RUN:
-    #     a = traffic.optimal_plan(Trigger=True)
-    #     print(a)
-    #     break
+#     traffic.initial(map_path=MAP_PATH,fleet=PATH)
+#     # a = traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[143.0, 211.0],[440, 700]])
+#     path = traffic.planning(start=[[128, 208], [436, 643]],goal=[[143, 211], [451, 290]])
+#     print(path)
         
 
 
