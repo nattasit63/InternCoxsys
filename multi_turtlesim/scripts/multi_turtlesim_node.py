@@ -284,6 +284,7 @@ class Controller(Node):
         self.prev_goal = np.array([0.0,0.0])
         self.first = True
         self.service_trigger = False
+        self.is_dup = False
         self.is_arrive = 0
         self.pose = Pose()
         timer_period = 0.05
@@ -309,7 +310,6 @@ class Controller(Node):
         result[idx]=id_agent
         result[idx+1]=self.current_postion[0]
         result[idx+2]=self.current_postion[1]
-        self.prev_goal = [self.current_postion[0],self.current_postion[1]]
 
 
     def check_reach_goal(self):
@@ -323,9 +323,19 @@ class Controller(Node):
         self.pose = msg
     def set_goal_callback(self,request,response):
         self.first=False
-        self.service_trigger = True
+
         self.is_arrive=0
+        # if self.prev_goal[0] == request.x and self.prev_goal[1] == request.y:
+        #     id_agent = (int(str(self.agent_name[-1])))
+        #     idx = (id_agent-1)*3
+        #     result[-1] = 0.0
+        #     result[idx]=id_agent
+        #     result[idx+1]=self.current_postion[0]
+        #     result[idx+2]=self.current_postion[1]
+        #     self.goal[0],self.goal[1]= self.prev_goal[0],self.prev_goal[1]
+        #     return response
         self.goal = np.array([request.x,request.y])
+        self.prev_goal = self.goal.copy()
         return response
         
     def control(self):
@@ -334,9 +344,9 @@ class Controller(Node):
         self.current_postion = current_position
         dp = self.goal-current_position
         e = np.arctan2(dp[1],dp[0])-self.pose.theta
-        K = 3.8
+        K = 5.5
         w = K*np.arctan2(np.sin(e),np.cos(e))
-        if np.linalg.norm(dp)>0.3:
+        if np.linalg.norm(dp)>0.2:
             v = 0.3
         else:
             v = 0.0
@@ -345,18 +355,7 @@ class Controller(Node):
         msg.angular.z = w
         return msg
 
-class Service_Client(Node):
-    def __init__(self,name):  
-        super().__init__(str(name)+'_service_client')
-        self.cli = self.create_client(Setgoal, '/'+str(name)+'_service_client')
-        self.req = Setgoal.Request()
-    def send_request_set_goal(self,x_start,y_start):
-        self.req.x = x_start
-        self.req.y = y_start
-        self.future = self.cli.call_async(self.req)
 
-# o=Service_Client()
-# o.send_request(85,56)
 class Function():
     def sim_to_traffic(self,data):
         result=[]
@@ -389,6 +388,7 @@ class Function():
             real_ans.append(z)
         return real_ans,head
     def traffic_to_sim(self,q):
+        # print(f'traffic_tosim : q = {q}')
         a =[]
         for i in range(len(q)):
             a.append([])
@@ -397,17 +397,10 @@ class Function():
                 a[i].append([j[0]*16.00/800.00,abs(16.00-(j[1]*16.00/800.00))])
         return a
     def sub_path(self,path):
-        def traffic_to_sim(q):
-            a =[]
-            for i in range(len(q)):
-                a.append([])
-            for i in range(len(q)):
-                for j in q[i]:
-                    a[i].append([j[0]*16.00/800.00,abs(16.00-(j[1]*16.00/800.00))])
-            return a
+        # print(f'path ; {path}')
         path = np.array(path*1.00)
         path = path.tolist()
-        sub_path = traffic_to_sim(path)
+        sub_path = self.traffic_to_sim(path)
         return sub_path
     def get_plan_data_list(self,x,id):
         start = []
@@ -444,12 +437,6 @@ class Function():
                 cmd = 'ros2 service call /spawn_parcel multi_turtlesim_interfaces/srv/SpawnParcel '+custom_cmd            
                 os.popen(cmd).read()  
     
-def create_service_client(name):
-    rclpy.init(args=None)
-    client = Service_Client(name)
-    rclpy.spin(client)
-    client.destroy_node()
-    rclpy.shutdown()
                                   
 def spin_main_node(head):
     rclpy.init(args=None)
@@ -475,13 +462,10 @@ def main(args=None):
     global result
     RUN = True
     procs,srv_pros,goal_srv_pros = [],[],[]
-    current_start,current_goal,last_goal_sub_path,cur_id = [],[],[],[]
+    current_start,current_goal,cur_id,id_agent = [],[],[],[]
     state,sub_index,index = 0,0,0
     path,head = function.convert_to_TurtlesimScreen(PATH,800.00,800.00)
     customer,q = function.convert_to_TurtlesimScreen(essential_pos,800.00,800.00)
-
-    last_start,last_goal = [0,0],[0,0]
-    prev_start,prev_goal = [0,0],[0,0]
     """
     Just for this example :
         Use Multi processing to spin multiple of nodes
@@ -495,13 +479,11 @@ def main(args=None):
     result = mp.Array('d',(len(head)*3)+1)
     for i in range(len(head)):
         cur_id.append(0)
+        id_agent.append(i)
         name_agent =  'turtle'+str(i+1)       
         run_controller = mp.Process(target=controller_node_run,args=(name_agent,head[i],result))
-        create_client = mp.Process(target=create_service_client,args=(name_agent,))
         procs.append(run_controller)
-        srv_pros.append(create_client)
         procs[i].start()
-        srv_pros[i].start()
     """
     Initial to start
     Use optimal plan with no args to get first initial path
@@ -512,6 +494,7 @@ def main(args=None):
     """
     Visualise in while loop
     """
+    all_agent = id_agent.copy()
     path = function.sub_path(initial_path)           #Convert pixel to turtlesim screen
     num_agent = len(head)
     while RUN:
@@ -519,37 +502,35 @@ def main(args=None):
             current_goal=[]
             goal_srv_pros=[]
             max_subindex = len(path[0])-1
-            print(f'max index:{max_subindex} | subindex:{sub_index}')
+            id = id_agent
+            
+            # print(f'max index:{max_subindex} | subindex:{sub_index}')
             for sub in path:
                 current_goal.append(sub[-1])
-            for i in range(num_agent):
-                name = f'turtle{i+1}'
+            for i in range(len(id)): 
+                name = f'turtle{id[i]+1}'
                 goal_srv = mp.Process(target=function.go_to_goal,args=(name,path[i][sub_index],))
                 goal_srv_pros.append(goal_srv)
                 goal_srv_pros[i].start()
-            time.sleep(0.2)
+            time.sleep(0.88)
             state = 1
         
         if state ==1:
             dis = lambda x1,x2,y1,y2 : ((x1-x2)**2+(y1-y2)**2)**1/2
             if result[-1]!=0.0 :
                 arrive_id = int(result[-1])
-                goal_x1,goal_y1 = current_goal[arrive_id-1][0],current_goal[arrive_id-1][1]
+                # print(f'arrive_id:{arrive_id}')
+                qq = id_agent.index(arrive_id-1)
+                goal_x1,goal_y1 = current_goal[qq][0],current_goal[qq][1]
                 x2,y2 = result[arrive_id*3-len(head)],result[arrive_id*3-len(head)+1]
                 eul = dis(goal_x1,x2,goal_y1,y2)
                 if eul<=0.1:
                     lastest_pos = function.sim_to_traffic([[result[1],result[2]],[result[4],result[5]]])
-                    last_start,last_goal = traffic.tracking()
-                
-                    # if prev_goal[0] == last_goal[0] and prev_start[0] == last_start[0]:
-                    #     print(f'DUPLICATE at start:{last_start[0]} goal:{prev_goal[0]}')
-                        # path = lastpath
-                        # state = 0
-                    
-                    prev_start,prev_goal = last_start.copy(),last_goal.copy()
-                    path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=lastest_pos)
+                    # print(f'arrive_id:{arrive_id-1}|current_pos:{lastest_pos}')
+                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=lastest_pos)          
                     path = function.sub_path(path)
-                    # print(path)
+                    id_agent = agent
+                    # print(f'turtle alive: {agent}')
 
                     sub_index=0   
                     state = 0
@@ -558,12 +539,7 @@ def main(args=None):
                         result[-1]=0.0
                         sub_index+=1
                         state = 0
-    
-   
-# [[[2.38, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8], [2.78, 11.8]],
-#  [[8.78, 3.0], [9.18, 3.4000000000000004], [9.18, 3.8000000000000007], [9.18, 4.199999999999999], [9.18, 4.6], [9.18, 5.0], [9.18, 5.4], [9.18, 5.800000000000001], [9.18, 6.199999999999999], [9.18, 6.6], [9.18, 7.0], [9.18, 7.4], [9.18, 7.800000000000001], [9.18, 8.2], [9.18, 8.6], [9.18, 9.0], [9.18, 9.4], [9.18, 9.8], [9.18, 10.2]]]       
-            
-   
+
 
 if __name__=='__main__':
     function = Function()
