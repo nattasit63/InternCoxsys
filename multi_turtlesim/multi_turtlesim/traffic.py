@@ -10,8 +10,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16
 
-GRID_SIZE = 16
-ROBOT_RADIUS = 4
+GRID_SIZE = 4
+ROBOT_RADIUS = 10
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
 RESULT = []
 
@@ -42,10 +42,20 @@ class Traffic_Management():
         
     def get_plan_data_list(self,x,id):
         start = []
-        goal = []   
+        goal = [] 
+       
         for i in range(len(x)):
-            start.append(x[i][id])
-            goal.append(x[i][id+1])
+            # print(f'fleet{i}')
+            try:
+                start.append(x[i][id])
+            except:
+                start.append(x[i][-1])
+            # print(f'startAppend:{start}')
+            try:
+                goal.append(x[i][id+1])
+            except:
+                goal.append(x[i][-1])
+            # print(f'goalAppend:{goal}')
         return start,goal
         
     def initial(self,map_path,fleet:List[Tuple[int, int]]):
@@ -96,20 +106,9 @@ class Traffic_Management():
             start,goal = self.get_plan_data_list(self.fleet,0)
             return self.planning(start,goal)
         if Trigger:
-            # id = self.alive_agent.index(arrive_id)       
-            # self.current_index[id]+=1
-            # if self.current_index[id]<=self.agent_max_index[id]-2:
-            #     q,new_goal = self.get_plan_data_list(self.fleet,self.current_index[id])
-            #     self.current_goal[arrive_id] = to_int(new_goal)[id]
-            #     start = to_int(current_all_pos)
-            #     Trigger = False
-            #     return self.alive_agent,self.planning(start,self.current_goal)
-            # else:
-            #     del self.fleet[id]
-            #     del self.current_index[id]
-            #     del self.alive_agent[id]
+            # print(f'maxIndex :{self.agent_max_index}')
             if state == 0:
-                print(f'state : {state}')
+                # print(f'state : {state}')
                 try:
                     id = self.alive_agent.index(arrive_id)
                     state = 1
@@ -118,7 +117,7 @@ class Traffic_Management():
                     # print(f'alive agent:{self.alive_agent}')
                     state = 4
             if state == 4:
-                print(f'state : {state}')
+
                 agent = []  #use for return
                 start_live,goal_live  = [],[]
                 for i in range(len(self.alive_agent)):
@@ -128,23 +127,19 @@ class Traffic_Management():
                     id_live = self.alive_agent.index(live)
                     self.current_index[id_live]+=1
                     agent.append(live)
-                    # print(f'index in alive_agent : {id}')
                     start_live[live-1] = to_int(current_all_pos)[live]
                     q,new_goal_live = self.get_plan_data_list(self.fleet,self.current_index[id_live])
                     goal_live[live-1] = to_int(new_goal_live)[id_live]
-                    # print(goal_live)
                 path_live = self.planning(start_live,goal_live)
-                # print(path_live)
                 return agent,path_live
 
             if state == 1 :
-                print(f'state : {state}')
+                # print(f'state : {state}')
                 self.current_index[id]+=1
                 if self.current_index[id]<=self.agent_max_index[arrive_id]-2:
                    state = 2
                 else:
-                    print(f'fleet : {self.fleet}')
-                    print(f'currendIndex :{self.current_index} | ID:{id}')
+                    
                     del self.fleet[id]
                     del self.current_index[id]
                     del self.alive_agent[id]
@@ -154,12 +149,12 @@ class Traffic_Management():
                     state = 2
             if state==2:
                 real_start,real_goal = [],[]
-                print(f'state : {state}')
-                
+                # print(f'state : {state}')
+                # print(f'fleet : {self.fleet}')
+                # print(f'currendIndex :{self.current_index} | ID:{id}')
                 q,new_goal = self.get_plan_data_list(self.fleet,self.current_index[id])
                 self.current_goal[id] = to_int(new_goal)[id]
-                start = to_int(current_all_pos)
-                
+                start = to_int(current_all_pos)         
                 for i in range(len(self.alive_agent)):
                     real_start.append(start[self.alive_agent[i]])
                     real_goal.append(self.current_goal[i])
@@ -167,13 +162,7 @@ class Traffic_Management():
                 Trigger = False
                 # return self.alive_agent,self.planning(start, self.current_goal)
                 return self.alive_agent,self.planning(real_start, real_goal)
-            # if state == 3 :
-            #     print(f'state : {state}')
-            #     del self.fleet[id]
-            #     del self.current_index[id]
-            #     del self.alive_agent[id]
-            #     self.del_id.append(id)
-            #     state = 2
+
 
     
     def get_obstacle_ind(self,name):
@@ -297,49 +286,30 @@ def direct_assigner(starts: List[Tuple[int, int]], goals: List[Tuple[int, int]])
 #     print(traffic_manager.full_plan(name=MAP_PATH))
 #     rclpy.spin(traffic_manager)
 
-# def main(args=None):
-#     traffic.initial(map_path=MAP_PATH,fleet=PATH)
-#     traffic.optimal_plan()
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     print('*'*50)
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
-#     traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[59.0, 216.0],[325.0, 287.0]])
+def main(args=None):
+    traffic.initial(map_path=MAP_PATH,fleet=PATH)
+    traffic.optimal_plan()
+    print(traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=2,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=2,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+    print(traffic.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[332, 107], [530, 270], [547, 539]]))
+
 
     
 
 
 
-# if __name__=='__main__':
-#     PATH = [[[59.0, 216.0], [143.0, 211.0], [135.0, 94.0], [251.0, 92.0], [135.0, 94.0], [143.0, 211.0], [59.0, 216.0]], 
-#     [[440.0, 700.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [327.0, 208.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [549.0, 599.0], [703.0, 708.0]
-#     , [559.0, 478.0], [549.0, 599.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [249.0, 290.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [440.0, 700.0]]]
+if __name__=='__main__':
+    PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
+ [[715, 275], [709, 228], [535, 278], [534, 405], [586, 577], [446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
+ [[452, 697], [446, 585], [586, 577], [534, 405], [594, 406], [534, 405], [586, 577], [586, 633], [603, 740], [586, 633], [586, 577], [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
 
-#     essential_pos = [[[59, 216], [440, 700]], [[251, 92], [327, 208], [249, 290], [559, 478], [703, 708]]]
-#     MAP_PATH = '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+    essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
+    MAP_PATH = '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
         
-#     traffic = Traffic_Management()
+    traffic = Traffic_Management()
 
-#     main()
+    main()
