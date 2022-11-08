@@ -16,16 +16,18 @@ import yaml
 import pygame
 import numpy as np
 import math,yaml
-from multi_turtlesim.traffic import Traffic_Management
+from multi_turtlesim.traffic import Traffic_Management,Traffic_Service_Server
 import  multi_turtlesim.traffic as mt
 import multiprocessing as mp
 from turtlee_interfaces.srv import Setgoal
-from cbs_mapf.planner import Planner
-# import multi_turtlesim.controller as controller
 
-PATH = [[[59.0, 216.0], [143.0, 211.0], [135.0, 94.0], [251.0, 92.0], [135.0, 94.0], [143.0, 211.0], [59.0, 216.0]], 
-[[440.0, 700.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [327.0, 208.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [549.0, 599.0], [703.0, 708.0], [559.0, 478.0], [549.0, 599.0], [436.0, 593.0], [451.0, 290.0], [325.0, 287.0], [249.0, 290.0], [325.0, 287.0], [451.0, 290.0], [436.0, 593.0], [440.0, 700.0]]]
-essential_pos = [[[59, 216], [440, 700]], [[251, 92], [327, 208], [249, 290], [559, 478], [703, 708]]]
+
+PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
+ [[715, 275], [709, 228], [535, 278], [534, 405], [586, 577], [446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
+ [[452, 697], [446, 585], [586, 577], [534, 405], [594, 406], [534, 405], [586, 577], [586, 633], [603, 740], [586, 633], [586, 577], [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
+
+essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
+
 MAP_PATH = '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
     
 
@@ -138,8 +140,8 @@ class GUI():
         self.map_image = pygame.transform.scale(self.map_image,(self.screen_width, self.screen_height))
         rect = self.map_image.get_rect()
         rect = rect.move((0,0))
-        self.obstacle  = traffic.get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
-        # self.obstacle = Traffic_Management.get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
+        # self.obstacle  = Traffic_Management(MAP_PATH,fleet=PATH).get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
+        self.obstacle = Traffic_Management().get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
         
         # print('Obstacle = ',self.obstacle)
         self.map_image.set_colorkey((255,255,255))
@@ -281,13 +283,13 @@ class Controller(Node):
         self.goal = start_position
         self.start_point = start_position
         self.current_postion = []
-        self.prev_goal = np.array([0.0,0.0])
+        self.prev_pos = np.array([0.0,0.0])
         self.first = True
         self.service_trigger = False
         self.is_dup = False
         self.is_arrive = 0
         self.pose = Pose()
-        timer_period = 0.05
+        timer_period = 0.8
         self.timer = self.create_timer(timer_period,self.timer_callback)
     def timer_callback(self):
         msg = self.control()     
@@ -305,12 +307,30 @@ class Controller(Node):
     def send_data(self):
         id_agent = (int(str(self.agent_name[-1])))
         idx = (id_agent-1)*3
-        # if self.prev_goal[0]!=self.current_postion[0] and self.prev_goal[1]!=self.current_postion[1]:
+        
+        # if self.dup_point():
+        #     result[idx]=id_agent
+        #     result[idx+1]=self.current_postion[0]
+        #     result[idx+2]=self.current_postion[1]
+        # else:
+        #     result[-1] = id_agent
+        #     result[idx]=id_agent
+        #     result[idx+1]=self.current_postion[0]
+        #     result[idx+2]=self.current_postion[1]
         result[-1] = id_agent
         result[idx]=id_agent
         result[idx+1]=self.current_postion[0]
         result[idx+2]=self.current_postion[1]
+        
+        self.prev_pos[0],self.prev_pos[1] = self.current_postion[0],self.current_postion[1]
 
+    def dup_point(self):
+       
+        prev_position = np.array([self.prev_pos[0],self.prev_pos[1]])
+        dp = np.array([self.pose.x,self.pose.y]) - prev_position
+        if np.linalg.norm(dp)<0.1:
+            print('dup')
+            return True
 
     def check_reach_goal(self):
         current_position = np.array([self.pose.x,self.pose.y])
@@ -323,17 +343,7 @@ class Controller(Node):
         self.pose = msg
     def set_goal_callback(self,request,response):
         self.first=False
-
         self.is_arrive=0
-        # if self.prev_goal[0] == request.x and self.prev_goal[1] == request.y:
-        #     id_agent = (int(str(self.agent_name[-1])))
-        #     idx = (id_agent-1)*3
-        #     result[-1] = 0.0
-        #     result[idx]=id_agent
-        #     result[idx+1]=self.current_postion[0]
-        #     result[idx+2]=self.current_postion[1]
-        #     self.goal[0],self.goal[1]= self.prev_goal[0],self.prev_goal[1]
-        #     return response
         self.goal = np.array([request.x,request.y])
         self.prev_goal = self.goal.copy()
         return response
@@ -344,19 +354,26 @@ class Controller(Node):
         self.current_postion = current_position
         dp = self.goal-current_position
         e = np.arctan2(dp[1],dp[0])-self.pose.theta
-        K = 5.5
+        K = 2.8
         w = K*np.arctan2(np.sin(e),np.cos(e))
         if np.linalg.norm(dp)>0.2:
-            v = 0.3
+            v = 0.15
         else:
             v = 0.0
             w = 0.0
         msg.linear.x = v
         msg.angular.z = w
         return msg
-
-
 class Function():
+    def get_pos_result(self,num_agent,result):
+        list_pos = []
+        res = result
+        for i in range(num_agent):
+            list_pos.append([])
+
+        for i in range(len(list_pos)):
+            list_pos[i]=[res[i*num_agent+1],res[i*num_agent+2]]
+        return list_pos
     def sim_to_traffic(self,data):
         result=[]
         for i in range(len(data)):
@@ -436,8 +453,7 @@ class Function():
                 custom_cmd = add_cmd(j[0],j[1])
                 cmd = 'ros2 service call /spawn_parcel multi_turtlesim_interfaces/srv/SpawnParcel '+custom_cmd            
                 os.popen(cmd).read()  
-    
-                                  
+                               
 def spin_main_node(head):
     rclpy.init(args=None)
     gui = GUI()
@@ -453,17 +469,22 @@ def spin_main_node(head):
     rclpy.shutdown()
 def controller_node_run(agent,start,q):
     rclpy.init(args=None)
-    controller = Controller(name=agent,start_position=start,que=q)
+    controller = Controller(name=agent,start_position=start,que=q) 
     rclpy.spin(controller)
     controller.destroy_node()
     rclpy.shutdown()
-
+def spin_traffic_node():
+    rclpy.init(args=None)
+    traffic_node = Traffic_Service_Server(traffic)
+    rclpy.spin(traffic_node)
+    traffic_node.destroy_node()
+    rclpy.shutdown()
 def main(args=None):
     global result
     RUN = True
-    procs,srv_pros,goal_srv_pros = [],[],[]
-    current_start,current_goal,cur_id,id_agent = [],[],[],[]
-    state,sub_index,index = 0,0,0
+    function = Function()
+    procs,goal_srv_pros,current_goal,cur_id,id_agent = [],[],[],[],[]
+    state,sub_index = 0,0
     path,head = function.convert_to_TurtlesimScreen(PATH,800.00,800.00)
     customer,q = function.convert_to_TurtlesimScreen(essential_pos,800.00,800.00)
     """
@@ -475,6 +496,9 @@ def main(args=None):
     """
     main_node = mp.Process(target=spin_main_node,args=([head]))
     main_node.start()
+    traffic_node = mp.Process(target=spin_traffic_node)
+    traffic_node.start()
+    
     # function.service_spawn_parcel(cus=customer)
     result = mp.Array('d',(len(head)*3)+1)
     for i in range(len(head)):
@@ -485,25 +509,15 @@ def main(args=None):
         procs.append(run_controller)
         procs[i].start()
     """
-    Initial to start
-    Use optimal plan with no args to get first initial path
-    """
-    traffic.initial(map_path=MAP_PATH,fleet=PATH)
-    initial_path = traffic.optimal_plan()
-
-    """
     Visualise in while loop
     """
-    all_agent = id_agent.copy()
     path = function.sub_path(initial_path)           #Convert pixel to turtlesim screen
-    num_agent = len(head)
     while RUN:
         if state == 0:
             current_goal=[]
             goal_srv_pros=[]
             max_subindex = len(path[0])-1
-            id = id_agent
-            
+            id = id_agent     
             # print(f'max index:{max_subindex} | subindex:{sub_index}')
             for sub in path:
                 current_goal.append(sub[-1])
@@ -512,22 +526,23 @@ def main(args=None):
                 goal_srv = mp.Process(target=function.go_to_goal,args=(name,path[i][sub_index],))
                 goal_srv_pros.append(goal_srv)
                 goal_srv_pros[i].start()
-            time.sleep(0.88)
+            # print('Service Sent')
+            time.sleep(2)
             state = 1
         
         if state ==1:
             dis = lambda x1,x2,y1,y2 : ((x1-x2)**2+(y1-y2)**2)**1/2
             if result[-1]!=0.0 :
                 arrive_id = int(result[-1])
-                # print(f'arrive_id:{arrive_id}')
                 qq = id_agent.index(arrive_id-1)
                 goal_x1,goal_y1 = current_goal[qq][0],current_goal[qq][1]
-                x2,y2 = result[arrive_id*3-len(head)],result[arrive_id*3-len(head)+1]
+                x2,y2 = result[arrive_id*3-len(head)+1],result[arrive_id*3-len(head)+2]
                 eul = dis(goal_x1,x2,goal_y1,y2)
-                if eul<=0.1:
-                    lastest_pos = function.sim_to_traffic([[result[1],result[2]],[result[4],result[5]]])
-                    # print(f'arrive_id:{arrive_id-1}|current_pos:{lastest_pos}')
-                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=lastest_pos)          
+                if eul<=0.1 :
+                    result_index = function.get_pos_result(num_agent=len(head),result=result)
+                    lastest_pos = function.sim_to_traffic(result_index)
+                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=lastest_pos) 
+                    # print(f'agent:{agent} | \tpath :{path}')         
                     path = function.sub_path(path)
                     id_agent = agent
                     # print(f'turtle alive: {agent}')
@@ -541,9 +556,18 @@ def main(args=None):
                         state = 0
 
 
+        
 if __name__=='__main__':
-    function = Function()
+
     traffic = Traffic_Management()
+    """
+    Initial to start
+    Use optimal plan with no args to get first initial path
+    """
+    
+    traffic.initial(map_path=MAP_PATH,fleet=PATH)
+    initial_path = traffic.optimal_plan()
+    
     main()
 
  
