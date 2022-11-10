@@ -541,7 +541,8 @@ def main(args=None):
                 if eul<=0.1 :
                     result_index = function.get_pos_result(num_agent=len(head),result=result)
                     lastest_pos = function.sim_to_traffic(result_index)
-                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=lastest_pos) 
+                    traffic.current_all_pos = lastest_pos
+                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=traffic.current_all_pos) 
                     # print(f'agent:{agent} | \tpath :{path}')         
                     path = function.sub_path(path)
                     id_agent = agent
@@ -556,18 +557,30 @@ def main(args=None):
                         state = 0
 
 
-        
-if __name__=='__main__':
+def main2(args=None):
+    traffic_node = mp.Process(target=spin_traffic_node)
+    traffic_node.start()
+    # rclpy.init(args=args)
+    # mm = Traffic_Management()
+    # mm.initial(map_path=MAP_PATH,fleet=PATH)
+    # mm.optimal_plan()
+   
+    # traffic_srv = Traffic_Service_Server(traffic)
+    # rclpy.spin(traffic_srv)
+    # traffic_srv.destroy_node()
+    # rclpy.shutdown()
 
-    traffic = Traffic_Management()
+
+
+if __name__=='__main__':
     """
     Initial to start
     Use optimal plan with no args to get first initial path
     """
     
+    traffic = Traffic_Management()
     traffic.initial(map_path=MAP_PATH,fleet=PATH)
     initial_path = traffic.optimal_plan()
-    
-    main()
+    main2()
 
  
