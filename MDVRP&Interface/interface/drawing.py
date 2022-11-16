@@ -538,7 +538,7 @@ class Drawing():
                 current = self.true_route[i][j]
                 next = self.true_route[i][j+1]
                 self.connect_point(current,next,colors)
-        
+        return self.true_route
     
     def real_position(self):
         ans = []

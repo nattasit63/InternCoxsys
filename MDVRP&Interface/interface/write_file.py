@@ -15,6 +15,8 @@ class Write_file():
         self.n = 0
     
     def write(self,data,amount_customer,amount_depot,pos):
+
+        print(f'write file pos: {pos}')
         self.customer_amount = amount_customer
         self.depot_amount = amount_depot
         self.entry_data = data

@@ -15,10 +15,9 @@ from write_file import Write_file
 from solver import Solver
 from nwx import NX
 import nwx
-
 import cv2
 import yaml
-
+import multi_turtlesim_visualize as visual
 
 
 class GUI(Node):
@@ -183,6 +182,10 @@ class GUI(Node):
         self.draw.visual_astar(self.nw.mapping_with_ui(solution))
        # self.draw.visual(solution)
 
+    def multi_turtlesim_visualize(self):
+        visual.initialize(fleet=self.astar_route,customer_pos=self.write_pos,map_loc=self.root_filename)
+        print('visuallll')
+
     def home(self):
         try:
             self.draw.clear_variable()
@@ -303,8 +306,10 @@ class GUI(Node):
         
         elif self.mode == 14 :
             self.info_to_write = self._tk.entry_list
-            pos = [self.draw.depot_pos,self.draw.customer_pos]
-            self.write_file_path = self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,pos)
+            self.write_pos = [self.draw.depot_pos,self.draw.customer_pos]
+            
+            
+            self.write_file_path = self.write_file.write(tk_.export_data,drawing.amount_customer,drawing.amount_depot,self.write_pos)
             # pos = [self.draw.depot_pos,self.draw.all_via_point_pos]
             # self.write_file_path = self.write_file.write2(tk_.export_data,drawing.amount_all_vp,drawing.customer_index,drawing.amount_depot,pos,drawing.connect_index)
             self.mode = 15
@@ -315,20 +320,19 @@ class GUI(Node):
             self.cost = best_cost
             self.sol = solution
 
-            # self.nw.do_real_path(solution)
-            # astar_route =  nwx.astar_path 
-            print(self.nw.mapping_with_ui(solution))
-            
             
             # self.draw.visual(solution)
-            self.draw.visual_astar(self.nw.mapping_with_ui(solution))
-            print(self.draw.real_position())
+            self.astar_route = self.draw.visual_astar(self.nw.mapping_with_ui(solution))
+            print(f'mapping nw : {self.astar_route}')
+            print(f'write pos : {self.write_pos}')
+            # print(f'draw.real_positio : {self.draw.real_position()}')   #use for convert fleet position back to original map pixel
             self.mode = 16
         
         elif self.mode == 16 :
             self._tk.create_txt_pos('STEP 4 : ',w/68.8,h/37.5+h/1.97368 ,"light grey",self.bg_color)
             self._tk.create_btn(self.root,'Save\nresult',int(h/375),int(w/137.6),self.save_solution2,w/68.8+w/13.76,h/37.5+h/1.97368)
             self._tk.create_btn(self.root,'Re-Calculate',int(h/375),int(w/137.6),self.re_calculate,w/68.8+w/13.76+w/12,h/37.5+h/1.97368)
+            self._tk.create_btn(self.root,'Visualize',int(h/375),int(w/137.6),self.multi_turtlesim_visualize,w/68.8+w/13.76,h/37.5+h/1.97368+75)
 
         elif self.mode == 17 :
             self._tk.disable_btn(self.root,'Save\nresult',int(h/375),int(w/137.6),self.save_solution2,w/68.8+w/13.76,h/37.5+h/1.97368)

@@ -1,24 +1,72 @@
-import matplotlib.pyplot as plt
-from tkinter import filedialog
-from tkinter.filedialog import asksaveasfile
-from tkinter import *
-from typing import List, Tuple
+# import multi_turtlesim_visualize
+
+
+# fleet,ess,map = multi_turtlesim_visualize.initialize()
+# multi_turtlesim_visualize.main(fleet,ess,map)
+
+#!/usr/bin/python3
+import sys,math,yaml,pygame,time,rclpy,os,random
+from rclpy.node import Node
+from ament_index_python.packages import get_package_share_directory
+from std_msgs.msg import UInt8MultiArray
+from geometry_msgs.msg import Twist, Point
+from turtlesim.msg import Pose
+from std_srvs.srv import Empty
+from multi_turtlesim_interfaces.srv import Pick, SpawnParcel, GetTurtleIDs, GetPosition
+from functools import partial
 import numpy as np
-from scipy.optimize import linear_sum_assignment
+import multiprocessing as mp
+from turtlee_interfaces.srv import Setgoal
+from traffic import Traffic_Management
+import traffic as mt
+import multi_turtlesim_visualize as visual
+# def initialize():
+#     PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
+#     [[446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
+#     [ [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
+#     essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
+#     MAP_PATH =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+#     return PATH,essential_pos,MAP_PATH
 
-q = [[[199, 197], [243, 165], [328, 232], [361, 185], [243, 165], [199, 197]]]
+PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
+    [[446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
+    [ [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
+essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
+MAP_PATH =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
 
-for i in range(len(q)):
-    for j in range(len(q[i])):
-        print(q[i][j])
-        q[i][j][0] = q[i][j][0]*200/800
-        q[i][j][1] = q[i][j][1]*200/800
-        # for k in range(q[i][j]):
-        #     q[i][j][k]
-        print(q[i][j])
+# visual.initialize(fleet=PATH,customer_pos=essential_pos,map_loc=MAP_PATH)
+
+# traffic = Traffic_Management()
+# traffic.initial(map_path=MAP_PATH,fleet=PATH)
+# initial_path = traffic.optimal_plan()
+# visual.main(fleet=PATH,customer_pos=essential_pos,init_path=initial_path)
+
+visual.run(fleet=PATH,customer_pos=essential_pos,map_loc=MAP_PATH)
+
+
+
+
+# import matplotlib.pyplot as plt
+# from tkinter import filedialog
+# from tkinter.filedialog import asksaveasfile
+# from tkinter import *
+# from typing import List, Tuple
+# import numpy as np
+# from scipy.optimize import linear_sum_assignment
+
+# q = [[[199, 197], [243, 165], [328, 232], [361, 185], [243, 165], [199, 197]]]
+
+# for i in range(len(q)):
+#     for j in range(len(q[i])):
+#         print(q[i][j])
+#         q[i][j][0] = q[i][j][0]*200/800
+#         q[i][j][1] = q[i][j][1]*200/800
+#         # for k in range(q[i][j]):
+#         #     q[i][j][k]
+#         print(q[i][j])
     
-print(len(q[0]))
-print(q)
+# print(len(q[0]))
+# print(q)
 
 
 # class Agent:
