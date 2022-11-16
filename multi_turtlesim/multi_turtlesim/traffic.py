@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from time import time
+import sys
+import time
 from typing import  List, Tuple
 from cbs_mapf.planner import Planner
 import cv2 
@@ -11,6 +12,8 @@ from rclpy.node import Node
 from std_msgs.msg import Int16
 from turtlee_interfaces.srv import Matcs
 from std_srvs.srv import Empty
+import multiprocessing as mp
+from multiprocessing import Manager
 GRID_SIZE = 12
 ROBOT_RADIUS = 6
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
@@ -24,27 +27,32 @@ RESULT = []
 # trig_signal = False
 # srv_id = 0
 
-
-
+def insert_list(shared,original):
+    try:
+        for i in range(len(original)):
+            shared[i] = original[i]
+    except:
+        pass
 
 class Traffic_Management():
     
     def __init__(self):    
         self.grid_size = GRID_SIZE
-        self.start = []
-        self.goal = []
-        self.current_start = []
-        self.current_goal =[]
-        self.obs_list = []
-        self.obs_ind = []
-        self.index = 0
-        self.current_index =[]
-        self.alive_agent = []
-        self.agent_max_index = []
-        self.fleet = []
-        self.id = []
-        self.del_id = []
-        self.current_all_pos = []
+        self.manager = Manager()
+        self.start = self.manager.list()
+        self.goal = self.manager.list()
+        self.current_start = self.manager.list()
+        self.current_goal =self.manager.list()
+        self.obs_list = self.manager.list()
+        self.obs_ind = self.manager.list()
+        self.current_index =self.manager.list()
+        self.alive_agent = self.manager.list()
+        self.agent_max_index = self.manager.list()
+        self.fleet = self.manager.list()
+        self.id = self.manager.list()
+        self.del_id = self.manager.list()
+        self.current_all_pos = self.manager.list()
+        # self.shared_list = self.manager.list(self.current_all_pos)
 
 
     def get_plan_data_list(self,x,id):
@@ -81,8 +89,13 @@ class Traffic_Management():
             self.alive_agent.append(i)
         for point in fleet:       
             self.current_all_pos.append(point[0])
-        # print(f'init : {self.current_all_pos}')
-
+        self.mg_cap = self.manager.list(self.current_all_pos)
+        self.mg_cur_ind = self.manager.list(self.current_index)
+        self.mg_alive_agent = self.manager.list(self.alive_agent)
+        self.mg_id = self.manager.list(self.id)
+        self.mg_fleet =self.manager.list(self.fleet) 
+        self.shared_list = self.manager.list([[]]*len(fleet))
+        # print(f'len fleet:{self.shared_list}')
         for path in fleet:
             self.agent_max_index.append(len(path))
            
@@ -96,11 +109,20 @@ class Traffic_Management():
     def tracking(self):
         return self.current_start,self.current_goal
     
-    def optimal_plan(self,Trigger=None,arrive_id=None,current_all_pos=None):
-        global cix
+    def optimal_plan(self,Trigger=None,arrive_id=None,current_all_pos=None):   
         state = 0
         self.current_all_pos = current_all_pos
-        cix = current_all_pos
+        # print(f'cur_ID:{self.current_index}')
+        try:
+            get_pos = mp.Process(target=insert_list,args=(self.mg_cap,current_all_pos,))     
+            get_cur_pos = mp.Process(target=insert_list,args=(self.mg_cur_ind,self.current_index,))
+            get_id = mp.Process(target=insert_list,args=(self.mg_id,self.id,))
+            get_pos.start()
+            get_cur_pos.start()
+            get_id.start()
+            time.sleep(0.3)
+        except:
+            pass
         def to_int(x):
             ans = []
             for i in x:
@@ -108,14 +130,12 @@ class Traffic_Management():
             return ans
         if Trigger==None:
             start,goal = self.get_plan_data_list(self.fleet,0)
-
             return self.planning(start,goal)
-        if Trigger:
-            self.current_all_pos = current_all_pos
-            # print(f'current_index = {self.current_index}')
+        if Trigger:       
             if state == 0:
                 try:
-                    id = self.alive_agent.index(arrive_id)
+                    id = self.mg_alive_agent.index(arrive_id)
+                    # id = self.alive_agent.index(arrive_id)
                     state = 1
                 except:
                     print('id not found')
@@ -123,42 +143,82 @@ class Traffic_Management():
 
             if state == 1 :
                 self.current_index[id]+=1
+                # print(f'cur_ID trigger:{self.current_index}')
+                get_cur_pos = mp.Process(target=insert_list,args=(self.mg_cur_ind,self.current_index,))
+                get_cur_pos.start()
+                
+                time.sleep(0.3)
+                # print(f'mg cur_ID:{self.mg_cur_ind}')
                 if self.current_index[id]<=self.agent_max_index[arrive_id]-2:
                    state = 2
                 else: 
                     del self.fleet[id]
                     del self.current_index[id]
                     del self.alive_agent[id]
+                    del self.mg_alive_agent[id]
+                    del self.mg_cur_ind[id]
+                    del self.mg_fleet[id]
                     self.del_id.append(id)
-                    if self.fleet==[]:
-                        return 'Complete'
+                    
+                   
+
                     state = 2
             if state==2:
+
                 real_start,real_goal = [],[]
-                q,new_goal = self.get_plan_data_list(self.fleet,self.current_index[id])
-                self.current_goal[id] = to_int(new_goal)[id]
-                start = to_int(current_all_pos)         
-                for i in range(len(self.alive_agent)):
-                    real_start.append(start[self.alive_agent[i]])
-                    real_goal.append(self.current_goal[i])
-                Trigger = False
-                return self.alive_agent,self.planning(real_start, real_goal)
+                # q,new_goal = self.get_plan_data_list(self.mg_fleet,self.current_index[id])
+                try:
+                    q,new_goal = self.get_plan_data_list(self.mg_fleet,self.mg_cur_ind[id])
+                    self.current_goal[id] = to_int(new_goal)[id]
+                    start = to_int(current_all_pos)
+                    # for i in range(len(self.alive_agent)):
+                    #     real_start.append(start[self.alive_agent[i]])
+                    #     real_goal.append(self.current_goal[i])
+                    for i in range(len(self.mg_alive_agent)):
+                        real_start.append(start[self.mg_alive_agent[i]])
+                        real_goal.append(self.current_goal[i])
+                    Trigger = False
+                    return self.mg_alive_agent,self.planning(real_start, real_goal)
+                except:
+                    state = 5
             
             if state == 4:
                 agent = []  #use for return
                 start_live,goal_live  = [],[]
-                for i in range(len(self.alive_agent)):
+                # for i in range(len(self.alive_agent)):
+                #     start_live.append([])
+                #     goal_live.append([])
+                # for live in self.alive_agent:
+                #     id_live = self.alive_agent.index(live)
+                #     self.current_index[id_live]+=1
+                #     agent.append(live)
+                #     start_live[live-1] = to_int(current_all_pos)[live]
+                #     q,new_goal_live = self.get_plan_data_list(self.fleet,self.current_index[id_live])
+                #     goal_live[live-1] = to_int(new_goal_live)[id_live]
+                # path_live = self.planning(start_live,goal_live)
+                # print(f'state:{state}')
+                # print(f'mg_alive_agent:{self.alive_agent}')
+                for i in range(len(self.mg_alive_agent)):
                     start_live.append([])
                     goal_live.append([])
-                for live in self.alive_agent:
-                    id_live = self.alive_agent.index(live)
-                    self.current_index[id_live]+=1
+                for live in self.mg_alive_agent:
+                    id_live = self.mg_alive_agent.index(live)
+                    self.mg_cur_ind[id_live]+=1
                     agent.append(live)
                     start_live[live-1] = to_int(current_all_pos)[live]
-                    q,new_goal_live = self.get_plan_data_list(self.fleet,self.current_index[id_live])
+                    # q,new_goal_live = self.get_plan_data_list(self.fleet,self.mg_cur_ind[id_live])
+                    q,new_goal_live = self.get_plan_data_list(self.mg_fleet,self.mg_cur_ind[id_live])
                     goal_live[live-1] = to_int(new_goal_live)[id_live]
                 path_live = self.planning(start_live,goal_live)
                 return agent,path_live
+
+            if state == 5:
+                print('-'*50)
+                print('\n')
+                print('Traffic Done')
+                print('\n')
+                print('-'*50)
+                return True,True
 
     def get_obstacle_ind(self,name):
         self.map_img = name 
@@ -176,7 +236,7 @@ class Traffic_Management():
                 else:
                     self.obs_ind.append((h,w))
                     self.img_copy[w][h]=(0,0,0)
-        print('ok')
+        # print('ok')
         return self.obs_ind
 
  
@@ -216,9 +276,16 @@ class Traffic_Management():
         cv2.destroyAllWindows()
  
     def get_server_service(self,trigger,id):
+        print('-'*50)
+        print('\n')
+        
         print(f'Service TRIGGER : {trigger} | Id : {id}')
-        print(f'current_all_pos :{self.current_all_pos}')
-        self.optimal_plan(Trigger=trigger,arrive_id=id,current_all_pos=cix)
+        # print(f'cap : {self.mg_cap}')
+        # print(f'index serv: {self.mg_cur_ind}')
+
+        self.optimal_plan(Trigger=trigger,arrive_id=id,current_all_pos=self.mg_cap)
+        print('\n')
+        print('-'*50)
         return 
     def prepare_data(self,fleet_result):
         start_list = []
@@ -275,10 +342,9 @@ class Traffic_Service_Server(Node):
     def __init__(self,Traffic):
         super().__init__('traffic_service_server')
         self.traffic = Traffic
-        self.position_trigger = self.create_service(Matcs,'/multi_agent_traffic_control',self.set_trigger_callback) 
+        self.position_trigger = self.create_service(Matcs,'/matc_trigger_service',self.set_trigger_callback) 
         # print(self.traffic.pp)
     def set_trigger_callback(self,request,response):
-        print(request.trigger,request.id)
         self.traffic.get_server_service( request.trigger,request.id)
         return response
 
@@ -297,33 +363,27 @@ def main(args=None):
     mm = Traffic_Management()
     mm.initial(map_path=MP,fleet=PATH)
     mm.optimal_plan()
-    mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[311,139],[500,275],[452,697]])
+    mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[311,139],[500,275],[452,697]])
+    mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[311,139],[500,275],[452,697]])
+    mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[111,111],[311,275],[452,697]])
+    a,b = mm.optimal_plan(Trigger=True,arrive_id=2,current_all_pos=[[111,111],[311,275],[452,697]])
+    if a == True:
+        sys.exit()
     traffic_srv = Traffic_Service_Server(mm)
     rclpy.spin(traffic_srv)
     traffic_srv.destroy_node()
     rclpy.shutdown()
 
-# traffic = Traffic_Management()
-
-# def main(args=None):
-#     MAP_PATH = '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
-#     # rclpy.init(args=args)
-#     traffic_manager = Traffic_Management(path2map=MAP_PATH)
-#     rclpy.spin(traffic_manager)
-#     traffic_manager.destroy_node()
-#     rclpy.shutdown()
 
 
 
 if __name__=='__main__':
-    PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
- [[715, 275], [709, 228], [535, 278], [534, 405], [586, 577], [446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
- [[452, 697], [446, 585], [586, 577], [534, 405], [594, 406], [534, 405], [586, 577], [586, 633], [603, 740], [586, 633], [586, 577], [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
+
+    PATH = [[[131, 193], [164, 94], [200, 114]],
+            [[715, 275], [709, 228] ], 
+            [[452, 697], [446, 585]]]
 
     essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
 
     MP =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
-   
-
-
     main()
