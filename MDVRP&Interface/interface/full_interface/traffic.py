@@ -13,8 +13,8 @@ from turtlee_interfaces.srv import Matcs
 from std_srvs.srv import Empty
 import multiprocessing as mp
 from multiprocessing import Manager
-GRID_SIZE = 8
-ROBOT_RADIUS =18
+GRID_SIZE = 12
+ROBOT_RADIUS =8
 COLOR = [(255,0,0),(0,0,255),(0,255,0)]
 RESULT = []
 
@@ -228,7 +228,7 @@ class Traffic_Management():
         imS = cv2.resize(originalImage, (800, 800))
         grayImage = cv2.cvtColor(imS, cv2.COLOR_BGR2GRAY)      
         (thresh, blackAndWhiteImage) = cv2.threshold(grayImage, 127, 255, cv2.THRESH_BINARY)
-        print('Converted to Gray Scale')
+        print('Converting ......')
         self.img_copy = imS.copy()
         for w in range (1,blackAndWhiteImage.shape[0]):
             for h in range (1,blackAndWhiteImage.shape[1]):
@@ -238,6 +238,7 @@ class Traffic_Management():
                 else:
                     self.obs_ind.append((h,w))
                     self.img_copy[w][h]=(0,0,0)
+        print('Converted to Black-White image')
         # print('ok')
         # for i in self.obs_ind:
         #     # print(i)
@@ -247,42 +248,41 @@ class Traffic_Management():
 
  
     def full_plan(self,name,fleet):
-        self.map_img = name 
-        originalImage = cv2.imread(name)
-        imS = cv2.resize(originalImage, (800, 800))
-        grayImage = cv2.cvtColor(imS, cv2.COLOR_BGR2GRAY)      
-        (thresh, blackAndWhiteImage) = cv2.threshold(grayImage, 127, 255, cv2.THRESH_BINARY)
-        print('Converted to Gray Scale')
-        self.img_copy = imS.copy()
-        for w in range (1,blackAndWhiteImage.shape[0]):
-            for h in range (1,blackAndWhiteImage.shape[1]):
-                pixel = blackAndWhiteImage[w,h]
-                if pixel>=10:
-                    self.img_copy[w][h]=(255,255,255)                 
-                else:
-                    self.obs_ind.append((h,w))
-                    self.img_copy[w][h]=(0,0,0)
+        obs_ind = self.get_obstacle_ind(name)
+
         all_start_list,all_goal_list = self.prepare_data(fleet)
-        planner = Planner(grid_size=GRID_SIZE,robot_radius=ROBOT_RADIUS,static_obstacles=self.obs_ind)
-        
+        start_initial_time = time.time()
+        planner = Planner(grid_size=GRID_SIZE,robot_radius=ROBOT_RADIUS,static_obstacles=obs_ind)  
+        final_initial_time = time.time()   
+        use_time =   final_initial_time - start_initial_time
+        print(f'Initial libary time : {use_time} seconds')
         for i in range(len(all_start_list)):
             print(f'Start : {all_start_list[i]} , Goal : {all_goal_list[i]}')
             path = planner.plan(starts= all_start_list[i],goals=all_goal_list[i],debug=False,assign=direct_assigner)
-            
-            for k in path:
-                RESULT.append(path)
+            try:
+                a = np.array(path)
+                a=a.tolist()
+                if a==[]:
+                    print(f'*****INFEASIBLE  at  Start:{all_start_list[i]},Goal:{all_goal_list[i]}*************')
+            except:
+                pass
+                
+            RESULT.append(path)
+            # for k in path:
+            #     RESULT.append(path)
 
-            for z in range(len(path)):
-                for j in range(len(path[z])):         
-                    x_pos = path[z][j][1]
-                    y_pos = path[z][j][0]
-                    self.img_copy[x_pos][y_pos] = COLOR[z%3]
+            # for z in range(len(path)):
+            #     for j in range(len(path[z])):         
+            #         x_pos = path[z][j][1]
+            #         y_pos = path[z][j][0]
+            #         self.img_copy[x_pos][y_pos] = COLOR[z%3]
 
         return RESULT
-        
+
         # cv2.imshow("Image Copy", self.img_copy)       
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
+
  
     def get_server_service(self,trigger,id):
         print('-'*50)
@@ -367,25 +367,29 @@ class Traffic_Service_Server(Node):
 
 
 
-def main(args=None):
-    mm = Traffic_Management()
-    mm.initial(map_path=MAP_PATH,fleet=PATH)
-    mm.optimal_plan()
-    a,b = mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[246, 601], [645, 168]])
-    a,b = mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[240, 538], [583, 111]])
-    a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[240, 538], [583, 111]])
-    # print(b)
-    a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[100, 533], [475, 403]])
-    print(b)
-
-if __name__=='__main__':
-
-    PATH = [[[222, 618], [238, 529], [102, 532], [13, 369], [100, 284], [259, 287], [319, 200], [444, 267], [449, 324], [430, 376], [254, 371], [238, 529], [402, 587], [497, 586], [408, 698], [402, 587], [238, 529], [113, 720], [102, 532], [13, 369], [100, 284], [84, 200], [100, 284], [13, 369], [102, 532], [238, 529], [222, 618]], 
-    [[675, 133], [642, 195], [553, 112], [470, 26], [252, 27], [470, 26], [563, 53], [642, 195], [675, 133], [642, 195], [563, 53], [734, 48], [714, 288], [734, 48], [563, 53], [553, 112], [541, 259], [535, 376], [548, 447], [735, 412], [733, 573], [723, 732], [556, 723], [612, 590], [497, 586], [402, 587], [238, 529], [399, 480], [430, 376], [449, 324], [444, 267], [441, 126], [553, 112], [642, 195], [675, 133]]]
-   
-    essential_pos =[[[222, 618], [675, 133]], [[84, 200], [252, 27], [497, 586], [254, 371], [319, 200], [714, 288], [548, 447], [556, 723], [113, 720], [102, 532], [408, 698], [733, 573], [553, 112], [734, 48], [563, 53], [441, 126], [449, 324], [399, 480], [13, 369], [735, 412], [723, 732]]]
-    MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
-    main()
+# def main(args=None):
+#     mm = Traffic_Management()
+#     mm.initial(map_path=MAP_PATH,fleet=PATH)
+#     mm.optimal_plan()
+#     # a,b = mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[246, 601], [645, 168]])
+#     # a,b = mm.optimal_plan(Trigger=True,arrive_id=1,current_all_pos=[[240, 538], [583, 111]])
+#     # a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[240, 538], [583, 111]])
+#     # # print(b)
+#     # a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[100, 533], [475, 403]])
+#     # print(b)
+#     a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[213, 590]])
+#     a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[85, 464]])
+#     a,b = mm.optimal_plan(Trigger=True,arrive_id=0,current_all_pos=[[109, 210]])
+#     print(b)
+# if __name__=='__main__':
+#     # PATH = [[[222, 618], [238, 529], [102, 532], [13, 369], [100, 284], [259, 287], [319, 200], [444, 267], [449, 324], [430, 376], [254, 371], [238, 529], [402, 587], [497, 586], [408, 698], [402, 587], [238, 529], [113, 720], [102, 532], [13, 369], [100, 284], [84, 200], [100, 284], [13, 369], [102, 532], [238, 529], [222, 618]], 
+#     # [[675, 133], [642, 195], [553, 112], [470, 26], [252, 27], [470, 26], [563, 53], [642, 195], [675, 133], [642, 195], [563, 53], [734, 48], [714, 288], [734, 48], [563, 53], [553, 112], [541, 259], [535, 376], [548, 447], [735, 412], [733, 573], [723, 732], [556, 723], [612, 590], [497, 586], [402, 587], [238, 529], [399, 480], [430, 376], [449, 324], [444, 267], [441, 126], [553, 112], [642, 195], [675, 133]]]
+#     # essential_pos =[[[222, 618], [675, 133]], [[84, 200], [252, 27], [497, 586], [254, 371], [319, 200], [714, 288], [548, 447], [556, 723], [113, 720], [102, 532], [408, 698], [733, 573], [553, 112], [734, 48], [563, 53], [441, 126], [449, 324], [399, 480], [13, 369], [735, 412], [723, 732]]]
+#     # MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+#     PATH = [[[212, 733], [209, 569], [65, 460], [106, 183], [237, 87], [346, 179], [505, 115], [763, 184], [541, 281], [536, 358], [786, 381], [775, 709], [619, 585], [534, 513], [619, 585], [432, 585], [209, 569], [65, 460], [209, 569], [212, 733]]]
+#     essential_pos =[[[212, 733]], [[65, 460], [106, 183], [346, 179], [763, 184], [541, 281], [786, 381], [534, 513], [775, 709]]]
+#     MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+#     main()
 
 
 
@@ -393,7 +397,6 @@ if __name__=='__main__':
 Service Trigger Example
 '''
 # def main(args=None):
-
 #     rclpy.init(args=args)
 #     mm = Traffic_Management()
 #     mm.initial(map_path=MAP_PATH,fleet=PATH)
@@ -426,11 +429,20 @@ Service Trigger Example
 '''
 Full Planning tutorial
 '''
-# if __name__=='__main__':
+if __name__=='__main__':
 
-#     PATH = [[[60, 449], [160, 522], [242, 415], [160, 522], [378, 508], [452, 587], [656, 592], [601, 519], [713, 490], [656, 592], [452, 587], [378, 508], [160, 522], [60, 449]], [[669, 729], [656, 592], [452, 587], [378, 508], [160, 522], [240, 687], [322, 574], [160, 522], [378, 508], [452, 587], [656, 592], [669, 729]]]
-#     essential_pos =[[[60, 449], [669, 729]], [[242, 415], [322, 574], [240, 687], [713, 490], [601, 519]]]
-#     MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
-#     traffic = Traffic_Management()
-#     a = traffic.full_plan(MAP_PATH,PATH)
-#     print(f'Answer : {a}')
+    #impossible path
+    # PATH = [[[222, 618], [238, 529], [102, 532], [13, 369]], 
+    # [[675, 133], [642, 195], [553, 112], [470, 26]]]
+
+    # PATH = [[[131, 193], [164, 94], [324, 84],[164, 94], [131, 193]],[[715, 275], [709, 228], [535, 278], [534, 405], [586, 577], [446, 585]], 
+    # [[452, 697], [446, 585], [586, 577],  [594, 406], [534, 405], [586, 577]]
+    # ]
+    
+    # PATH = [[[20,379],[766,380]],[[406,438],[45,379]],[[785,384],[403,421]]]
+    PATH = [[[40,427],[700,410]],[[393,660],[130,490]]]
+    essential_pos =[[[60, 449], [669, 729]], [[242, 415], [322, 574], [240, 687], [713, 490], [601, 519]]]
+    MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/tutorial3.png'
+    traffic = Traffic_Management()
+    a = traffic.full_plan(MAP_PATH,PATH)
+    print(f'Answer : {a}')
