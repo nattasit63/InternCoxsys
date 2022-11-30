@@ -142,8 +142,6 @@ class GUI():
         # self.obstacle  = Traffic_Management(MAP_PATH,fleet=PATH).get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
         # self.obstacle = self.traffic.get_obstacle_ind(name='/home/natta/traffic_manager/src/multi_turtlesim/images/map/map_example0.png')
         self.obstacle = self.traffic.obs_ind
-        
-        # print('Obstacle = ',self.obstacle)
         self.map_image.set_colorkey((255,255,255))
     
     def update(self,turtles,parcels):
@@ -155,16 +153,10 @@ class GUI():
             
         # Fill the background with white
         self.screen.fill((69, 86, 255))
-        # cell_size = mt.GRID_SIZE
-        # # print(f'Grid size : {cell_size}')
-        # for i in range(self.screen_width//cell_size):
-        #     pygame.draw.line(self.screen,(255,255,255),(0,cell_size*i),(self.screen_width,cell_size*i))
-        #     pygame.draw.line(self.screen,(255,255,255),(cell_size*i,0),(cell_size*i,self.screen_width))
         multi_turtlesim_path = get_package_share_directory('multi_turtlesim')
         self.screen.blit(self.map_image,(0,0))
             
-        img_parcel = pygame.image.load(os.path.join(multi_turtlesim_path,'images','parcel','parcel.png'))
-        # img_parcel = pygame.transform.scale(img_parcel, (cell_size,cell_size)).convert_alpha()        
+        img_parcel = pygame.image.load(os.path.join(multi_turtlesim_path,'images','parcel','parcel.png'))    
         
         for id,turtle in turtles.items():
             img = pygame.image.load(os.path.join(get_package_share_directory('multi_turtlesim'),'images','turtle',turtle.image))
@@ -179,10 +171,7 @@ class GUI():
                 self.screen.blit(img,(turtle.pose.x/5.0*250-size-math.floor(img.get_size()[0]/2),self.screen_width-turtle.pose.y/5.0*250-size-math.floor(img.get_size()[1]))) 
         for id,parcel in parcels.items():
             if not parcel.isPicked:
-                # print(f'Parcel is placed at {parcel.position.x},{parcel.position.y}')
                 self.customer_circle(parcel.position.x/16.0*800,parcel.position.y/16*800,5)
-                # self.screen.blit(img_parcel,(parcel.position.x/5.0*250,self.screen_width-parcel.position.y/5.0*250))
-                # pygame.draw.rect(self.screen,(255,0,0),pygame.Rect(parcel.position.x/5.0*250,self.screen_width-parcel.position.y/5.44445*250,cell_size,cell_size))
 
         pygame.display.flip()
     
@@ -310,18 +299,7 @@ class Controller(Node):
     def send_data(self):
         id_agent = (int(str(self.agent_name[-1])))
         idx = (id_agent-1)*3
-        
-        # if self.dup_point():
-        #     result[idx]=id_agent
-        #     result[idx+1]=self.current_postion[0]
-        #     result[idx+2]=self.current_postion[1]
-        # else:
-        #     result[-1] = id_agent
-        #     result[idx]=id_agent
-        #     result[idx+1]=self.current_postion[0]
-        #     result[idx+2]=self.current_postion[1]
         result[-1] = id_agent
-        # print(f'id agent : {result[-1]}')
         result[idx]=id_agent
         result[idx+1]=self.current_postion[0]
         result[idx+2]=self.current_postion[1]
@@ -335,8 +313,6 @@ class Controller(Node):
             if np.linalg.norm(dp)<0.5:
                 # print(f'{self.agent_name} REACH GOAL')
                 return True
-
-
     def pose_callback(self,msg):
         self.pose = msg
     def set_goal_callback(self,request,response):
@@ -406,7 +382,7 @@ class Function():
             real_ans.append(z)
         return real_ans,head
     def traffic_to_sim(self,q):
-        # print(f'traffic_tosim : q = {q}')
+        # print(f'traffic_tosim : q = {q[0]}')
         a =[]
         for i in range(len(q)):
             a.append([])
@@ -415,6 +391,7 @@ class Function():
                 a[i].append([j[0]*16.00/800.00,abs(16.00-(j[1]*16.00/800.00))])
         return a
     def sub_path(self,path):
+        # print(f'path ; {path}')
         path = np.array(path*1.00)
         path = path.tolist()
         sub_path = self.traffic_to_sim(path)
@@ -429,6 +406,7 @@ class Function():
         # print('GOAL  :',goal)
         return start,goal
     def go_to_goal(self,agent,goal):
+        # print(f' RECIEVE : agent={agent} and goal ={goal}')
         def add_cmd(x,y):
             result = '"' +'{'+'x: '+str(x)+', '+'y: '+str(y)+'}'+'"'
             return result
@@ -453,7 +431,18 @@ class Function():
                 custom_cmd = add_cmd(j[0],j[1])
                 cmd = 'ros2 service call /spawn_parcel multi_turtlesim_interfaces/srv/SpawnParcel '+custom_cmd            
                 os.popen(cmd).read()  
-                               
+    def fullplan_to_sim(self,full_path):
+        # x = np.array(full_path)
+        # x = x.tolist()     
+        x= full_path
+        for i in range(len(x)):
+            x[i] = np.array(x[i]*1.00)
+            for j in range(len(x[i])):
+                for l in range(len(x[i][j])):
+                    x[i][j][l][0] =  x[i][j][l][0]*16.00/800.00
+                    x[i][j][l][1] = abs(16.00-(x[i][j][l][1]*16.00/800.00))
+        return x
+                
 def spin_main_node(head):
     rclpy.init(args=None)
     gui = GUI(traffic)
@@ -480,12 +469,13 @@ def spin_traffic_node(mm):
     rclpy.spin(traffic_node)
     traffic_node.destroy_node()
     rclpy.shutdown()
-def main(fleet,customer_pos,init_path):
+def main(fleet,customer_pos,full_path):
     global result
-    RUN = True
+    RUN,first_run = True,True
     function = Function()
     procs,goal_srv_pros,current_goal,cur_id,id_agent = [],[],[],[],[]
-    state,sub_index,time_n = 0,0,0
+    state,sub_index,major_index = 0,0,0
+    max_len = 0
     path,head = function.convert_to_TurtlesimScreen(fleet,800.00,800.00)
     customer,q = function.convert_to_TurtlesimScreen(customer_pos,800.00,800.00)
     """
@@ -497,7 +487,7 @@ def main(fleet,customer_pos,init_path):
     """
     main_node = mp.Process(target=spin_main_node,args=([head]))
     main_node.start()
-    function.service_spawn_parcel(cus=customer)
+    # function.service_spawn_parcel(cus=customer)
     result = mp.Array('d',(len(head)*3)+1)
     for i in range(len(head)):
         cur_id.append(0)
@@ -506,112 +496,87 @@ def main(fleet,customer_pos,init_path):
         run_controller = mp.Process(target=controller_node_run,args=(name_agent,head[i],result))
         procs.append(run_controller)
         procs[i].start()
+
     """
     Visualise in while loop
     """
-    path = function.sub_path(init_path) #Convert pixel to turtlesim screen
-    while RUN:
-        if state == 0:  
-            current_goal=[]
-            goal_srv_pros=[]
-            max_subindex = len(path[0])-1
-            id = id_agent     
-            # print(f'max index:{max_subindex} | subindex:{sub_index}')
-            for sub in path:
-                current_goal.append(sub[-1])
-            # print('.'*70)
-            print(f'current goal : {current_goal}')
-            # print(f'result : {result[:]}')
-            print(f' sub index : {sub_index}  | max_subindex : {max_subindex}')
-            print('.'*70)
-            for i in range(len(id)): 
-                time.sleep(0.2)
-                name = f'turtle{id[i]+1}'
-                goal_srv = mp.Process(target=function.go_to_goal,args=(name,path[i][sub_index],))
-                goal_srv_pros.append(goal_srv)
-                goal_srv_pros[i].start()
-            time.sleep(0.5)
-            state = 1
-        
-        if state ==1:
-            time.sleep(1.2)
-            dis = lambda x1,x2,y1,y2 : ((x1-x2)**2+(y1-y2)**2)**1/2
-            if result[-1]!=0.0 :
-                arrive_id = int(result[-1])
-                qq = id_agent.index(arrive_id-1)
-                goal_x1,goal_y1 = current_goal[qq][0],current_goal[qq][1]
-                x2,y2 = result[(arrive_id-1)*3+1],result[(arrive_id-1)*3+2]
-                eul = dis(goal_x1,x2,goal_y1,y2)
-                if eul<=0.3 and time_n!=0:
-                    # print('CASE')
-                    result_index = function.get_pos_result(num_agent=len(head),result=result)
-                    print(f'result_index : {result_index}')
-                    lastest_pos = function.sim_to_traffic(result_index)
-                    traffic.current_all_pos = lastest_pos
-                    print(f'WHAT INPUT   :\n\tArrive id : {arrive_id-1}\n\tcurrent_all_pos : {lastest_pos}')
-                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=traffic.current_all_pos) 
 
-                    # print(' Traffic function has been called')
-                    # print(f'agent:{agent} | \tpath :{path}')
-                    if agent==True:
-                        sys.exit()
-                    else:
-                        path = function.sub_path(path)
-                        id_agent = agent
-                        print(f'turtle alive: {agent}')
-                        if path != []:
-                            print('Feasible path')
-                        else:
-                            print(' NO PATH')
-                        # print(f'path: {path}')
-                        sub_index=0   
-                        state = 0
-                else:
-                    if sub_index < max_subindex:
-                        result[-1]=0.0
-                        time_n = 1
+    turtlesim_path = function.fullplan_to_sim(full_path) #Convert pixel to turtlesim screen
+    num_path = len(turtlesim_path)
+    print(f'NUM_path : {num_path}')
+
+    while RUN:
+        if state == 0:
+            # print(len(turtlesim_path[0]))
+            id = id_agent
+            goal_srv_pros=[]
+            # print(f'Id : {id}')
+            
+            # print(f'Max len : {max_len} | major index : {major_index}  | sub_index : {sub_index}')
+            if major_index == num_path-1 and first_run==False:
+                print('-'*80,'\n')
+                print('\t\tComplete ','\n')
+                print('-'*80,'\n')
+                sys.exit()
+            else:
+                first_run == False
+                try:
+                    for i in range(len(id)): 
+                        time.sleep(0.3)
+                        name = f'turtle{id[i]+1}'
+                        goal_srv = mp.Process(target=function.go_to_goal,args=(name,turtlesim_path[major_index][i][sub_index],))
+                        goal_srv_pros.append(goal_srv)
+                        goal_srv_pros[i].start()
+                        max_len = len(turtlesim_path[major_index][i])
+                except:
+                    print('-'*80,'\n')
+                    print('\t\tComplete ','\n')
+                    print('-'*80,'\n')
+                    sys.exit()
+                time.sleep(0.3)
+                state = 1
+            if state ==1:
+                if major_index<num_path:
+                    if sub_index<=max_len-2:
                         sub_index+=1
+                        
+                    else:
+                        major_index+=1
+                        sub_index =0
                     state = 0
+                else:
+                    print('-'*80,'\n')
+                    print('\t\tComplete','\n')
+                    print('-'*80,'\n')
+                    sys.exit()
+
+
+
+    
+
 
 
 
 def run(fleet,customer_pos,map_loc):
-    global traffic,MAP_PATH
+    global traffic
     PATH,essential_pos,MAP_PATH = initialize(fleet,customer_pos,map_loc)
     traffic = Traffic_Management()
-    traffic.initial(map_path=MAP_PATH,fleet=PATH)
-    initial_path = traffic.optimal_plan()
-   
-    # print('----Initial----')
-    # traffic_node = mp.Process(target=spin_traffic_node,args=(traffic,))
-    # traffic_node.start()
-    # print('----Spin Service----')
-    main(fleet,customer_pos,initial_path)
+    full_planning_path = traffic.full_plan(MAP_PATH,PATH)
 
-
+    # print(full_planning_path)
+    main(fleet,customer_pos,full_planning_path)
 
 
 
 
 if __name__=='__main__':
-    """
-    # Initial to start
-    # Use optimal plan with no args to get first initial path
-    """
-
-    PATH =  [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
-    [[715, 275], [709, 228], [535, 278], [534, 405], [586, 577], [446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
-    [[452, 697], [446, 585], [586, 577],  [594, 406], [534, 405], [586, 577], [586, 633], [603, 740], [586, 633], [586, 577], [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
-
-    essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
-
-    MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+    PATH = [[[45,342],[730,370]],[[750,330],[410,450]],[[405,410],[50,355]]]
+    essential_pos =[[[60, 449], [669, 729]], [[242, 415], [322, 574], [240, 687], [713, 490], [601, 519]]]
+    MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/tutorial0.png'
     run(PATH,essential_pos,MAP_PATH)
 
 
 
-    # traffic = Traffic_Management()
-    # a = traffic.full_plan(MAP_PATH,PATH)
-    # print(f'Answer : {a}')
+
 
  

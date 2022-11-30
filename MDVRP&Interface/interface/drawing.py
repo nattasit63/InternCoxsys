@@ -211,6 +211,7 @@ class Drawing():
                     px = mouse[0]
                     py = mouse[1]
                     p = [px,py]
+                    # print(f'POSE MOUSE : {p}')
                     if type==0:  #depot
                         self.index_screen+=1
                         self.num_add_depot+=1
@@ -476,7 +477,7 @@ class Drawing():
                 next = self.true_route[i][j+1]
                 self.connect_point(current,next,colors)
         
-        print('ROUTE : ',self.true_route)
+        # print('ROUTE : ',self.true_route)
         return self.true_route
 
 
@@ -530,7 +531,7 @@ class Drawing():
                 else:
                     self.true_route[i][j] = self.all_via_point_pos[int(self.true_route[i][j])-1+amount_depot] 
 
-        print('POS IN A*ROUTE = ',self.true_route)
+        # print('POS IN A*ROUTE = ',self.true_route)
         pos_a_star = self.true_route
         for i in range(len(self.true_route)):
             colors = self.color[i]

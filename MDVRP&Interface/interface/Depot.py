@@ -83,6 +83,9 @@ class Depot():
 	def get_load(self):
 		return sum(c.q for c in self.customer_list)
 
+	def initial_cluster(self,c1,c2):
+		return ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5
+
 
 	# Distance 
 	def distance(self,c1,c2):

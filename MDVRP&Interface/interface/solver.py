@@ -93,7 +93,7 @@ class Solver():
         q = self.q
         m = self.m
         for c in customers:
-            distances = [(d.distance(c,d),d) for d in depots]
+            distances = [(d.initial_cluster(c,d),d) for d in depots]
             distances.sort(key=itemgetter(0))
             for dist in distances:
                 if dist[1].get_load()+c.q <= dist[1].Q*m:
@@ -116,7 +116,7 @@ class Solver():
                 # print(t.customer_list)
                 random.shuffle(t.customer_list)
             
-            print("Creating chromosome " + str(i+1))
+            # print("Creating chromosome " + str(i+1))
             
             population.append(Chromosome.Chromosome(temp_depots))
             # print(population)
@@ -164,7 +164,7 @@ class Solver():
             fitness.sort(key=itemgetter(0))
             avg_fitness = sum(f[0] for f in fitness)/len(population)
       
-            print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
+            # print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
             self.best_fitness.append(fitness[0][0])
             new_pop = []
             while len(new_pop) < len(population):

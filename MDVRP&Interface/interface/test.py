@@ -28,11 +28,10 @@ import multi_turtlesim_visualize as visual
 #     MAP_PATH =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
 #     return PATH,essential_pos,MAP_PATH
 
-PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
-    [[446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
-    [ [534, 405], [594, 406], [763, 407], [594, 406], [534, 405], [586, 577], [446, 585], [452, 697]]]
-essential_pos = [[[131, 193], [715, 275], [452, 697]], [[325, 150], [333, 239], [594, 406], [763, 407], [586, 633], [603, 740], [259, 716]]]
+PATH =  [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],[[66, 574], [250, 559], [217, 748], [435, 598], [281, 385], [250, 559], [66, 574]]]
+essential_pos = [[[66, 574]], [[281, 385], [435, 598], [217, 748]]]
 MAP_PATH =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+
 
 # visual.initialize(fleet=PATH,customer_pos=essential_pos,map_loc=MAP_PATH)
 

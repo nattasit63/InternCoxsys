@@ -98,12 +98,12 @@ class NX():
 
                 except:
                     # print('ERROR : ',(j,k))
-                    distance_matrix[j-1][k-1]=9999.99
+                    distance_matrix[j-1][k-1]=99999.99
        # print('Major matrix is calculated')
         self.dist_matrix = distance_matrix
 
         # adj_dist_matrix    =  self.dist_matrix    
-        # print(self.dist_matrix )
+        # print(f'Matrix : \n{self.dist_matrix}')
 
 
         self.customer_index = customer_index_list
@@ -128,13 +128,6 @@ class NX():
 
     def mapping_with_ui(self,solution):
         self.create(node_list,node_pos,edge_list)
-        # print('MAPPER')
-        # print('list : ',node_list)
-        # print('pos : ',node_pos)
-        # print('edge : ',edge_list)
-
-        
-        # print('Amount Depot : ',drawing.amount_depot)
         list_of_node = list(node_list)
         real_route = []
         real_route_astar = []
@@ -202,7 +195,7 @@ class NX():
                 else:
                     i[j] = str(i[j]-drawing.amount_depot)
         
-        print('A* route :','\n',real_route_astar)
+        # print('A* route :','\n',real_route_astar)
 
         return real_route_astar
         #plt.show()
@@ -222,7 +215,7 @@ class NX():
         sol = solution.split('\n')
 
         sol = sol[:-1]
-        print('SOL :',sol)
+        # print('SOL :',sol)
 
         for i in range(len(sol)):
             sol[i] = sol[i].split('\t')
@@ -263,8 +256,6 @@ class NX():
             x = real_route[i]
             for el in sum(x,[]):
                 real_route_astar[i].append(el)
-
-
 
         for i in range(len(real_route_astar)):
             depot = real_route_astar[i][0]

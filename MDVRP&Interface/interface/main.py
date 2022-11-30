@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 import rclpy
 from rclpy.node import Node
 import tkinter as tk
@@ -14,15 +14,15 @@ from drawing import Drawing
 from write_file import Write_file
 from solver import Solver
 from nwx import NX
-import nwx
+import multiprocessing as mp
 import cv2
 import yaml
 import multi_turtlesim_visualize as visual
 
 
-class GUI(Node):
+class GUI():
     def __init__(self):
-        super().__init__('gui')
+        # super().__init__('gui')
         self._tk = TK_()
         self.draw = Drawing()
         self.write_file = Write_file()
@@ -115,7 +115,6 @@ class GUI(Node):
         elif satisfied == "no":
             self.is_calculate = 0
         
-    
     def save_solution(self):
         try:
             self.write_file.write_sol(self.cost,self.sol)
@@ -152,39 +151,28 @@ class GUI(Node):
         self.root.destroy()
         sys.exit()
 
-    def on_closing2(self):
-        self.map_scr.destroy()
-        # sys.exit()
 
     def OK_step2(self):
         self.pg_quit = 0
-        # self.pg_quit = 1
         self.draw.send_to_nwx()
-        # self.draw.send_to_nwx()
-
-        # self.nw.do_real_path()
-
         self.mode=12
         self.draw.quit(self.pg_quit)
   
         return self.pg_quit
     
     def re_calculate(self):
- 
         self.solve2 = Solver()
         self.solve2.insert_file_path(self.write_file_path)
-        self.draw.back_to_original()
-
-        
+        self.draw.back_to_original()   
         best_cost,solution = self.solve2.run()
         tkinter.messagebox.showinfo('Calculation','Done . . .!')
         self.draw.send_to_nwx()
         self.draw.visual_astar(self.nw.mapping_with_ui(solution))
-       # self.draw.visual(solution)
 
     def multi_turtlesim_visualize(self):
-        visual.initialize(fleet=self.astar_route,customer_pos=self.write_pos,map_loc=self.root_filename)
-        print('visuallll')
+        visual.run(fleet=self.astar_route,customer_pos=self.write_pos,map_loc=self.root_filename)
+
+   
 
     def home(self):
         try:
@@ -323,8 +311,9 @@ class GUI(Node):
             
             # self.draw.visual(solution)
             self.astar_route = self.draw.visual_astar(self.nw.mapping_with_ui(solution))
-            print(f'mapping nw : {self.astar_route}')
-            print(f'write pos : {self.write_pos}')
+            print(f'PATH = {self.astar_route}')
+            print(f'essential_pos ={self.write_pos}')
+            print(f'MAP_PATH ={self.root_filename}')
             # print(f'draw.real_positio : {self.draw.real_position()}')   #use for convert fleet position back to original map pixel
             self.mode = 16
         
@@ -382,13 +371,20 @@ class GUI(Node):
        
 
 def main(args=None):
-    rclpy.init(args=args)
+    # rclpy.init(args=args)
+    # gui = GUI()
+    # gui.update()
+    # gui.root.mainloop()
+    # rclpy.spin(gui)
+    # gui.destroy_node()
+    # rclpy.shutdown()
+
     gui = GUI()
     gui.update()
     gui.root.mainloop()
-    rclpy.spin(gui)
-    gui.destroy_node()
-    rclpy.shutdown()
+    # gui.update()
+    # gui.root.mainloop()
+
 if __name__ == '__main__':
 
     main()
