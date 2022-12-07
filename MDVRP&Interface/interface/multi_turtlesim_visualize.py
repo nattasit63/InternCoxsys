@@ -549,7 +549,7 @@ def main(fleet,customer_pos,init_path):
                     lastest_pos = function.sim_to_traffic(result_index)
                     traffic.current_all_pos = lastest_pos
                     print(f'WHAT INPUT   :\n\tArrive id : {arrive_id-1}\n\tcurrent_all_pos : {lastest_pos}')
-                    agent,path = traffic.optimal_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=traffic.current_all_pos) 
+                    agent,path = traffic.matc_plan(Trigger=True,arrive_id=arrive_id-1,current_all_pos=traffic.current_all_pos) 
 
                     # print(' Traffic function has been called')
                     # print(f'agent:{agent} | \tpath :{path}')
@@ -579,8 +579,9 @@ def run(fleet,customer_pos,map_loc):
     global traffic,MAP_PATH
     PATH,essential_pos,MAP_PATH = initialize(fleet,customer_pos,map_loc)
     traffic = Traffic_Management()
-    traffic.initial(map_path=MAP_PATH,fleet=PATH)
-    initial_path = traffic.optimal_plan()
+    obs = traffic.get_obstacle_ind(MAP_PATH)
+    traffic.initial(fleet=PATH,obstacle=obs)
+    agent,initial_path = traffic.matc_plan()
    
     # print('----Initial----')
     # traffic_node = mp.Process(target=spin_traffic_node,args=(traffic,))
@@ -596,7 +597,7 @@ def run(fleet,customer_pos,map_loc):
 if __name__=='__main__':
     """
     # Initial to start
-    # Use optimal plan with no args to get first initial path
+    # Use  matc_plan   with no args to get first initial path
     """
 
     PATH =  [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
@@ -610,8 +611,5 @@ if __name__=='__main__':
 
 
 
-    # traffic = Traffic_Management()
-    # a = traffic.full_plan(MAP_PATH,PATH)
-    # print(f'Answer : {a}')
 
  

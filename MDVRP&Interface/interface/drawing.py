@@ -471,7 +471,8 @@ class Drawing():
                     self.true_route[i][j] = self.customer_pos[int(self.true_route[i][j])-1]
 
         for i in range(len(self.true_route)):
-            colors = self.color[i]
+            # colors = self.color[i]
+            colors = self.color[9]
             for j in range(len(self.true_route[i])-1):
                 current = self.true_route[i][j]
                 next = self.true_route[i][j+1]
@@ -523,6 +524,7 @@ class Drawing():
     def visual_astar(self,solution):
         global pos_a_star
         self.true_route =solution
+        # print('fffff = ',self.true_route)
         for i in range(len(self.true_route)):
             for j in range(len(self.true_route[i])):
                 check_depot = isinstance(self.true_route[i][j],int)
@@ -534,7 +536,7 @@ class Drawing():
         # print('POS IN A*ROUTE = ',self.true_route)
         pos_a_star = self.true_route
         for i in range(len(self.true_route)):
-            colors = self.color[i]
+            colors = self.color[9]
             for j in range(len(self.true_route[i])-1):
                 current = self.true_route[i][j]
                 next = self.true_route[i][j+1]

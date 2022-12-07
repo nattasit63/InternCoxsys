@@ -8,8 +8,10 @@ from operator import itemgetter
 import matplotlib.pyplot as plt
 
 BOUND = 2
-POPULATION_SIZE = 200
-GENERATION_SPAN = 125
+#POPULATION_SIZE = 200
+#GENERATION_SPAN = 125
+POPULATION_SIZE = 50
+GENERATION_SPAN = 20
 NUM_ELITE = 4
 CROSSOVER_PROB = 0.6
 INTRA_D_MUTATION_PROB = 0.1
@@ -164,7 +166,7 @@ class Solver():
             fitness.sort(key=itemgetter(0))
             avg_fitness = sum(f[0] for f in fitness)/len(population)
       
-            # print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
+            print("Generation: "+str((generation+1))+" Average fitness: " + str(avg_fitness) + " Best fitness: " + str(fitness[0][0]))
             self.best_fitness.append(fitness[0][0])
             new_pop = []
             while len(new_pop) < len(population):
@@ -200,7 +202,9 @@ class Solver():
         self.best_cost = best_candidate.total_route_duration()
         end_time = time.time()
         # print('BEST FITNESS  : ',self.best_fitness)
-        print('calculated time = ' ,end_time-start_time ,'  seconds')
+
+        print(f'Fleet calculate time : {end_time-start_time} seconds')
+        #print('calculated time = ' ,end_time-start_time ,'  seconds')
         self.print_sol(best_candidate)
         self.plot(best_candidate)
         

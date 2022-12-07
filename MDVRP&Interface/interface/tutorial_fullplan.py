@@ -561,18 +561,25 @@ def run(fleet,customer_pos,map_loc):
     global traffic
     PATH,essential_pos,MAP_PATH = initialize(fleet,customer_pos,map_loc)
     traffic = Traffic_Management()
-    full_planning_path = traffic.full_plan(MAP_PATH,PATH)
+    obs = traffic.get_obstacle_ind(MAP_PATH)
+    full_planning_path = traffic.full_plan(fleet=PATH,obstacle=obs)
 
-    # print(full_planning_path)
-    main(fleet,customer_pos,full_planning_path)
+    print(full_planning_path)
+    # main(fleet,customer_pos,full_planning_path)
 
 
 
 
 if __name__=='__main__':
     PATH = [[[45,342],[730,370]],[[750,330],[410,450]],[[405,410],[50,355]]]
+
+    PATH = [[[189, 598], [266, 490], [40, 378], [77, 210], [40, 378], [266, 490], [189, 598], [266, 490], [355, 578], [554, 593], [615, 605], [691, 690], [576, 727], [554, 593], [355, 578], [266, 490], [189, 598], [266, 490], [40, 378], [178, 207], [141, 155], [77, 210], [40, 378], [266, 490], [189, 598]]]
+    
+    
     essential_pos =[[[60, 449], [669, 729]], [[242, 415], [322, 574], [240, 687], [713, 490], [601, 519]]]
     MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/tutorial0.png'
+    MAP_PATH ='/home/natta/interface_ws/src/full_interface/config/map_example0.png'
+
     run(PATH,essential_pos,MAP_PATH)
 
 

@@ -67,7 +67,7 @@ class GUI():
 
     def select_file_path(self):
         my_path_default = "/home/natta/interface_ws/src/full_interface/config/"
-        self.root_filename = filedialog.askopenfilename(initialdir=my_path_default,title='Select .yaml file',filetypes=(("yaml file","*.yaml"),("pgm file","*.pgm"),("all files","*.*"),("png file","*.png")))
+        self.root_filename = filedialog.askopenfilename(initialdir=my_path_default,title='Select .yaml file',filetypes=(("png file","*.png"),("yaml file","*.yaml"),("pgm file","*.pgm"),("all files","*.*")))
         print("Path to File : ",self.root_filename)
         self.select =1
         if self.root_filename.endswith('.yaml'):

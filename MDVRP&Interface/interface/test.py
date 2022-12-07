@@ -20,6 +20,7 @@ from turtlee_interfaces.srv import Setgoal
 from traffic import Traffic_Management
 import traffic as mt
 import multi_turtlesim_visualize as visual
+import cv2
 # def initialize():
 #     PATH = [[[131, 193], [164, 94], [324, 84], [325, 150], [324, 84], [164, 94], [131, 193]],
 #     [[446, 585], [259, 716], [257, 592], [449, 292], [333, 239], [499, 144], [700, 150], [709, 228], [715, 275]], 
@@ -40,9 +41,37 @@ MAP_PATH =  '/home/natta/interface_ws/src/full_interface/config/map_example0.png
 # initial_path = traffic.optimal_plan()
 # visual.main(fleet=PATH,customer_pos=essential_pos,init_path=initial_path)
 
-visual.run(fleet=PATH,customer_pos=essential_pos,map_loc=MAP_PATH)
+# visual.run(fleet=PATH,customer_pos=essential_pos,map_loc=MAP_PATH)
 
 
+obs_ind =[]
+def get_obstacle_ind(name):
+        map_img = name 
+        originalImage = cv2.imread(name)
+        imS = cv2.resize(originalImage, (800, 800))
+        cv2.imshow("Original Image", imS)       
+        cv2.waitKey(0)
+        grayImage = cv2.cvtColor(imS, cv2.COLOR_BGR2GRAY)   
+        cv2.imshow("Gray Image", grayImage)       
+        cv2.waitKey(0)
+        (thresh, blackAndWhiteImage) = cv2.threshold(grayImage, 127, 255, cv2.THRESH_BINARY)
+        print('Converting ......')
+        img_copy = imS.copy()
+        for w in range (1,blackAndWhiteImage.shape[0]):
+            for h in range (1,blackAndWhiteImage.shape[1]):
+                pixel = blackAndWhiteImage[w,h]
+                if pixel>=10:
+                    img_copy[w][h]=(255,255,255)                 
+                else:
+                    obs_ind.append((h,w))
+                    img_copy[w][h]=(0,0,0)
+        print('Converted to Black-White image')
+        cv2.imshow("Converted image", img_copy)       
+        cv2.waitKey(0)
+        time.sleep(10)
+        # cv2.destroyAllWindows()
+
+get_obstacle_ind(MAP_PATH)
 
 
 # import matplotlib.pyplot as plt
